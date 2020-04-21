@@ -72,7 +72,7 @@ describe('LazySequence', () => {
       expect(compact.take(8)).toEqual([0, 1, 2])
     })
 
-    xit(`flattens a(n) ${name}`, () => {
+    it(`flattens a(n) ${name}`, () => {
       const arrayData = () => [[1], 2, [], [[3]]].values()
       const flattened = LazySequence(arrayData)
         .flatten() // this illustrates ordering as well as that it only flattens one level
