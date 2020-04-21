@@ -1,0 +1,22 @@
+{
+  "name": "@ag/lazy-seq",
+  "version": "1.0.0",
+  "description": "Lazily process iterators with functional semantics",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest --watchAll",
+    "lint": "standard --fix"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "moduleFileExtensions": [
+      "js"
+    ]
+  },
+  "author": "Austin Garrard",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^25.4.0",
+    "standard": "^14.3.3"
+  }
+}
