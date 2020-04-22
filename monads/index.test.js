@@ -1,0 +1,111 @@
+/* eslint-env jest */
+
+const monads = require('./')
+
+describe('Truthy', () => {
+  it('passes most truthy values, and returns Nil for most falsey values', () => {
+    const fns = [
+      x => x
+    ]
+
+    const result = initial =>
+      monads.chainM(monads.TruthyMonad, fns, initial)
+
+    expect(result(0)).toEqual(0)
+    expect(result([])).toEqual([])
+
+    expect(result(monads.Nil)).toEqual(monads.Nil)
+    expect(result(null)).toEqual(monads.Nil)
+    expect(result(undefined)).toEqual(monads.Nil)
+    expect(result('')).toEqual(monads.Nil)
+  })
+
+  it('safely chains function', () => {
+    const fns = [
+      x => x.toString(),
+      x => null
+    ]
+
+    const result = initial =>
+      monads.chainM(monads.TruthyMonad, fns, initial)
+
+    expect(result(0)).toEqual(monads.Nil)
+    expect(result(null)).toEqual(monads.Nil)
+    expect(result(monads.Nil)).toEqual(monads.Nil)
+  })
+})
+
+describe('Sequence', () => {
+  it('do', () => {
+    const fns = [
+      x => x
+    ]
+
+    const result = initial =>
+      monads.chainM(monads.SequenceMonad, fns, initial)
+
+    expect(result(1)).toEqual([1])
+    expect(result([])).toEqual([])
+    expect(result(null)).toEqual([null])
+  })
+})
+
+describe('Sequence + Nil', () => {
+  it('always return an array', () => {
+    const fn = x => x
+    const monad = monads.composeM(monads.SequenceMonad, monads.TruthyMonad)
+
+    const result = initial =>
+      monads.chainM(monad, [fn], initial)
+
+    expect(result(1)).toEqual([1])
+    expect(result([1, 2, 3])).toEqual([1, 2, 3])
+    expect(result([])).toEqual([])
+    expect(result(null)).toEqual([monads.Nil])
+    expect(result([undefined])).toEqual([monads.Nil])
+  })
+
+  it('processes each item', () => {
+    const fns = [
+      x => [x + 1, x + 2],
+      x => `${x}`,
+      x => [`a - ${x}`, `b - ${x}`, `c - ${x}`]
+    ]
+    const monad = monads.composeM(monads.SequenceMonad, monads.TruthyMonad)
+
+    const result = initial =>
+      monads.chainM(monad, fns, initial)
+
+    expect(result(1)).toEqual([
+      'a - 2',
+      'b - 2',
+      'c - 2',
+      'a - 3',
+      'b - 3',
+      'c - 3'
+    ])
+  })
+
+  it('processes each item with nil safety', () => {
+    const fns = [
+      x => [x + 1, x + 2, x + 3, x + 4],
+      x => x % 2 === 0 ? `${x}` : undefined,
+      x => [`a - ${x.toString()}`, `b - ${x}`, `c - ${x}`]
+    ]
+    const monad = monads.composeM(monads.SequenceMonad, monads.TruthyMonad)
+
+    const result = initial =>
+      monads.chainM(monad, fns, initial)
+
+    expect(result(1)).toEqual([
+      'a - 2',
+      'b - 2',
+      'c - 2',
+      monads.Nil,
+      'a - 4',
+      'b - 4',
+      'c - 4',
+      monads.Nil
+    ])
+  })
+})

@@ -1,88 +1,26 @@
 
-const LazySequence = (startSequence) => {
-  const fns = []
+const chain = (initial, ...fns) =>
+  fns.reduce(
+    (result, fn) => fn(result),
+    initial
+  )
 
-  const map = function (fn) {
-    fns.push(fn)
-    return this
-  }
+const map = fn => array => array.map(fn)
+const filter = fn => array => array.filter(fn)
+const compact = () => array => array.filter(x => x || x === 0)
+const flatten = (n = 1) => array => array.flat(n)
+const reduce = (fn, initial) => array => array.reduce(fn, initial)
 
-  const nil = Symbol('nil')
-  const filter = function (fn) {
-    fns.push(x => fn(x) ? x : nil)
-    return this
-  }
+const compose = (f, g) => x => f(g(x))
 
-  const compact = function () {
-    filter(x => {
-      const emptyArray = !x || x.length === 0
-      const zero = x === 0
-
-      return !emptyArray || zero
-    })
-    return this
-  }
-
-  const _flatten = Symbol('flatten')
-  const flattened = x => Object.assign(x, { [_flatten]: true })
-  const isFlat = x => x[_flatten]
-  const flatten = function () {
-    fns.push({ [_flatten]: true })
-    return this
-  }
-
-  const produceResult = (initial) => {
-    const result = r([initial], 0)
-    return isFlat(result) && Array.isArray(result)
-      ? result.flat()
-      : result
-  }
-
-  const r = (prev, i) => {
-    if (i === fns.length) return prev
-
-    const fn = fns[i]
-
-    if (isFlat(fn)) {
-      return Array.isArray(prev)
-        ? flattened(
-          prev.map(p => {
-            const result = r(p, i + 1, true)
-            return Array.isArray(p)
-              ? result.flat()
-              : result
-            })
-        )
-        : prev
-    } else {
-      const result = fn(prev[0])
-      if (result === nil) return nil
-      return r([result], i + 1)
-    }
-  }
-
-  const take = n => {
-    const iterator = startSequence()
-
-    let results = []
-    for (let i = 0; i < n; i++) {
-      const next = iterator.next()
-      if (next.done) {
-        break
-      }
-
-      const result = produceResult(next.value)
-
-      if (result !== nil) {
-        results = results.concat(result)
-      }
-    }
-
-    return results
-  }
-  return {
-    map, filter, compact, flatten, take
-  }
+module.exports = {
+  monads: require('./monads'),
+  lazyseq: require('./lazyseq'),
+  chain,
+  map,
+  filter,
+  compact,
+  flatten,
+  reduce,
+  compose
 }
-
-module.exports = { LazySequence }
