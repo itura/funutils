@@ -1,4 +1,6 @@
 
+const compose = (f, g) => x => f(g(x))
+const id = x => x
 const chain = (initial, ...fns) =>
   fns.reduce(
     (result, fn) => fn(result),
@@ -11,11 +13,9 @@ const compact = () => array => array.filter(x => x || x === 0)
 const flatten = (n = 1) => array => array.flat(n)
 const reduce = (fn, initial) => array => array.reduce(fn, initial)
 
-const compose = (f, g) => x => f(g(x))
-
 module.exports = {
   monads: require('./monads'),
-  lazyseq: require('./lazyseq'),
+  LazySeq: require('./lazyseq'),
   chain,
   map,
   filter,

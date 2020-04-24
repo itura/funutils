@@ -1,5 +1,5 @@
-const TruthyMonad = require('./truthy')
-const SequenceMonad = require('./sequence')
+const MaybeMonad = require('./maybe')
+const FlatSequenceMonad = require('./flatSequence')
 
 const composeM = (m1, m2) => {
   return {
@@ -15,9 +15,9 @@ const chainM = (monad, fns, initial) =>
   )
 
 module.exports = {
-  TruthyMonad,
-  Nil: TruthyMonad.Nil,
-  SequenceMonad,
+  MaybeMonad,
+  Nil: MaybeMonad.Nil,
+  FlatSequenceMonad,
   composeM,
   chainM
 }
