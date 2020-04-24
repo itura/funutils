@@ -1,5 +1,5 @@
 {
-  "name": "@ag/funutils",
+  "name": "@austin-garrard/funutils",
   "version": "1.0.0",
   "description": "Fun functional utilities for javascript",
   "main": "index.js",
