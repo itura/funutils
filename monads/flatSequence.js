@@ -1,21 +1,25 @@
 const { Bind } = require('./common')
 
 const unit = x => {
-  return Array.isArray(x) ? x : [x]
+  return Array.isArray(x)
+    ? x.length === 1
+      ? x[0]
+      : x
+    : x
 }
 
-const lift = bind => (prev, fn) => {
-  const monadicPrev = unit(prev)
-
-  return monadicPrev
-    .map(p => bind(p, fn))
-    .flat()
+const map = bind => (x, fn) => {
+  return Array.isArray(x)
+    ? x
+      .map(p => bind(p, fn))
+      .flat()
+    : bind(x, fn)
 }
 
 const FlatSequenceMonad = {
   unit,
-  lift,
-  bind: lift(Bind),
+  map,
+  bind: map(Bind)
 }
 
 module.exports = FlatSequenceMonad

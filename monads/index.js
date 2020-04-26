@@ -3,7 +3,7 @@ const FlatSequenceMonad = require('./flatSequence')
 
 const composeM = (m1, m2) => {
   return {
-    bind: m1.lift(m2.bind),
+    bind: m1.map(m2.bind),
     unit: m1.unit
   }
 }

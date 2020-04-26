@@ -1,9 +1,11 @@
 /* eslint-env jest */
 
 const monads = require('./')
+const { Nothing } = require('../types/maybe')
+const { id, compose } = require('../')
 
 describe('MaybeMonad', () => {
-  it('passes most truthy values, and returns Nil for most falsey values', () => {
+  it('passes most truthy values, and returns Nothing for most falsey values', () => {
     const fns = [
       x => x
     ]
@@ -13,28 +15,87 @@ describe('MaybeMonad', () => {
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
 
-    expect(result(monads.Nil)).toEqual(monads.Nil)
-    expect(result(null)).toEqual(monads.Nil)
-    expect(result(undefined)).toEqual(monads.Nil)
-    expect(result('')).toEqual(monads.Nil)
+    expect(result(Nothing)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing)
+    expect(result(undefined)).toEqual(Nothing)
+    expect(result('')).toEqual(Nothing)
   })
 
   it('safely chains functions', () => {
     const fns = [
-      x => x.toString(),
-      x => null
+      x => x,
+      x => x.toString()
     ]
 
     const result = initial => monads.chainM(monads.MaybeMonad, fns, initial)
 
-    expect(result(0)).toEqual(monads.Nil)
-    expect(result(null)).toEqual(monads.Nil)
-    expect(result(monads.Nil)).toEqual(monads.Nil)
+    expect(result(0)).toEqual('0')
+    expect(result([])).toEqual('')
+
+    expect(result(Nothing)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing)
+    expect(result(undefined)).toEqual(Nothing)
+    expect(result('')).toEqual(Nothing)
+  })
+
+  it('monad law 1: map id = id', () => {
+    const result = monads.MaybeMonad.map(id)
+
+    expect(result(1)).toEqual(id(1))
+    expect(result([])).toEqual(id([]))
+    expect(result(Nothing)).toEqual(id(Nothing))
+    expect(result(null)).toEqual(id(Nothing))
+  })
+
+  it('monad law 2: map f . map g = map(f . g)', () => {
+    const map = monads.MaybeMonad.map
+    const f = x => x + 2
+    const g = x => x * 3
+    const lhs = compose(map(f), map(g))
+    const rhs = map(compose(f, g))
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(null)).toEqual(rhs(null))
+  })
+
+  it('monad law 3: unit . f = map f . unit', () => {
+    const map = monads.MaybeMonad.map
+    const unit = monads.MaybeMonad.unit
+    const f = id
+    const lhs = compose(unit, f)
+    const rhs = compose(map(f), unit)
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs(0)).toEqual(rhs(0))
+    expect(lhs(null)).toEqual(rhs(null))
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs([])).toEqual(rhs([]))
+  })
+
+  xit('monad law 4: join . map(map f) = map f . join', () => {
+    const map = monads.MaybeMonad.map
+    const join = monads.MaybeMonad.join
+    const f = id
+    const lhs = compose(join, map(map(f)))
+    const rhs = map(compose(f, join))
+
+    expect(lhs(1)).toEqual(rhs(1))
+  })
+
+  xit('monad law 5: join . unit = id', () => {
+    const unit = monads.MaybeMonad.unit
+    const join = monads.MaybeMonad.join
+    const lhs = compose(join, unit)
+    const rhs = id
+
+    expect(lhs(1)).toEqual(rhs(1))
   })
 })
 
 describe('FlatSequenceMonad', () => {
-  it('always returns an array', () => {
+  it('applies identity', () => {
     const fns = [
       x => x
     ]
@@ -42,9 +103,10 @@ describe('FlatSequenceMonad', () => {
     const result = initial =>
       monads.chainM(monads.FlatSequenceMonad, fns, initial)
 
-    expect(result(1)).toEqual([1])
+    expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual([null])
+    expect(result(null)).toEqual(null)
+    expect(result([null])).toEqual([null])
   })
 
   it('flattens return values that are arrays', () => {
@@ -58,6 +120,43 @@ describe('FlatSequenceMonad', () => {
 
     expect(result(1)).toEqual(['2!', '3!'])
   })
+
+  it('monad law 1: map id = id', () => {
+    const lhs = monads.FlatSequenceMonad.map(id)
+    const rhs = id
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(null)).toEqual(rhs(null))
+  })
+
+  it('monad law 2: map f . map g = map(f . g)', () => {
+    const map = monads.FlatSequenceMonad.map
+    const f = x => x + 2
+    const g = x => x * 3
+    const lhs = compose(map(f), map(g))
+    const rhs = map(compose(f, g))
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(null)).toEqual(rhs(null))
+  })
+
+  it('monad law 3: unit . f = map f . unit', () => {
+    const map = monads.FlatSequenceMonad.map
+    const unit = monads.FlatSequenceMonad.unit
+    const f = id
+    const lhs = compose(unit, f)
+    const rhs = compose(map(f), unit)
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs(0)).toEqual(rhs(0))
+    expect(lhs(null)).toEqual(rhs(null))
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs([])).toEqual(rhs([]))
+  })
 })
 
 describe('FlatSequenceMonad . MaybeMonad', () => {
@@ -68,11 +167,11 @@ describe('FlatSequenceMonad . MaybeMonad', () => {
 
     const result = initial => monads.chainM(monad, [fn], initial)
 
-    expect(result(1)).toEqual([1])
+    expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual([monads.Nil])
-    expect(result([undefined])).toEqual([monads.Nil])
+    expect(result(null)).toEqual(Nothing)
+    expect(result([undefined])).toEqual([Nothing])
   })
 
   it('processes each item', () => {
@@ -107,11 +206,11 @@ describe('FlatSequenceMonad . MaybeMonad', () => {
       'a - 2',
       'b - 2',
       'c - 2',
-      monads.Nil,
+      Nothing,
       'a - 4',
       'b - 4',
       'c - 4',
-      monads.Nil
+      Nothing
     ])
   })
 })
@@ -128,10 +227,10 @@ describe('MaybeMonad . FlatSequenceMonad', () => {
     const result = initial =>
       monads.chainM(monad, fns, initial)
 
-    expect(result(1)).toEqual([1])
+    expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual(monads.Nil)
+    expect(result(null)).toEqual(Nothing)
     expect(result([undefined])).toEqual([undefined]) // not great
   })
 

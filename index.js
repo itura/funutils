@@ -22,5 +22,6 @@ module.exports = {
   compact,
   flatten,
   reduce,
-  compose
+  compose,
+  id
 }
