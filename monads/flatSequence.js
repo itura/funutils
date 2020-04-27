@@ -1,25 +1,35 @@
-const { Bind } = require('./common')
 
 const unit = x => {
-  return Array.isArray(x)
-    ? x.length === 1
-      ? x[0]
-      : x
-    : x
+  return [x]
 }
 
-const map = bind => (x, fn) => {
-  return Array.isArray(x)
-    ? x
-      .map(p => bind(p, fn))
-      .flat()
-    : bind(x, fn)
+const flatBind = (xs, f) =>
+  xs
+    .map(x => f(x))
+    .flat()
+
+const caseMap = cases => seq => {
+  if (seq.length === 1) {
+    if (Array.isArray(seq[0])) {
+      return cases.flatten(seq[0])
+    } else {
+      return cases.unit(seq[0])
+    }
+  } else {
+    return cases.flatten(seq)
+  }
+}
+
+const bind = f => Mx => {
+  return caseMap({
+    unit: x => f(x),
+    flatten: xs => flatBind(xs, f)
+  })(Mx)
 }
 
 const FlatSequenceMonad = {
   unit,
-  map,
-  bind: map(Bind)
+  bind
 }
 
 module.exports = FlatSequenceMonad

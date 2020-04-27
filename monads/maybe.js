@@ -1,27 +1,19 @@
-const { Bind } = require('./common')
 const { Nothing, caseMap, Maybe } = require('../types/maybe')
 
 const unit = x => {
-  return caseMap({
-    nothing: () => Nothing,
-    just: v => v
-  })(Maybe(x))
+  return Maybe(x)
 }
 
-const map = bind => (x, fn) => {
+const bind = f => Mx => {
   return caseMap({
     nothing: () => Nothing,
-    just: value => bind(value, fn)
-  })(Maybe(x))
+    just: value => f(value)
+  })(Mx)
 }
-
-const join = () => null
 
 const MaybeMonad = {
   unit,
-  map,
-  join,
-  bind: map(Bind),
+  bind
 }
 
 module.exports = MaybeMonad

@@ -1,16 +1,16 @@
 /* eslint-env jest */
 
 const monads = require('./')
-const { Nothing } = require('../types/maybe')
-const { id, compose } = require('../')
+const { Maybe, Just, Nothing } = require('../types/maybe')
+const { compose, id } = require('../common')
 
 describe('MaybeMonad', () => {
   it('passes most truthy values, and returns Nothing for most falsey values', () => {
-    const fns = [
+    const fs = [
       x => x
     ]
 
-    const result = initial => monads.chainM(monads.MaybeMonad, fns, initial)
+    const result = monads.chainM(monads.MaybeMonad)(fs)
 
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
@@ -22,12 +22,12 @@ describe('MaybeMonad', () => {
   })
 
   it('safely chains functions', () => {
-    const fns = [
+    const fs = [
       x => x,
       x => x.toString()
     ]
 
-    const result = initial => monads.chainM(monads.MaybeMonad, fns, initial)
+    const result = monads.chainM(monads.MaybeMonad)(fs)
 
     expect(result(0)).toEqual('0')
     expect(result([])).toEqual('')
@@ -38,150 +38,133 @@ describe('MaybeMonad', () => {
     expect(result('')).toEqual(Nothing)
   })
 
-  it('monad law 1: map id = id', () => {
-    const result = monads.MaybeMonad.map(id)
-
-    expect(result(1)).toEqual(id(1))
-    expect(result([])).toEqual(id([]))
-    expect(result(Nothing)).toEqual(id(Nothing))
-    expect(result(null)).toEqual(id(Nothing))
-  })
-
-  it('monad law 2: map f . map g = map(f . g)', () => {
-    const map = monads.MaybeMonad.map
-    const f = x => x + 2
-    const g = x => x * 3
-    const lhs = compose(map(f), map(g))
-    const rhs = map(compose(f, g))
-
-    expect(lhs(1)).toEqual(rhs(1))
-    expect(lhs([])).toEqual(rhs([]))
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
-    expect(lhs(null)).toEqual(rhs(null))
-  })
-
-  it('monad law 3: unit . f = map f . unit', () => {
-    const map = monads.MaybeMonad.map
+  it('monad law 1', () => {
     const unit = monads.MaybeMonad.unit
+    const bind = monads.MaybeMonad.bind
     const f = id
-    const lhs = compose(unit, f)
-    const rhs = compose(map(f), unit)
+    const lhs = compose(bind(f), unit)
+    const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
-    expect(lhs(0)).toEqual(rhs(0))
-    expect(lhs(null)).toEqual(rhs(null))
+    expect(lhs(null)).toEqual(rhs(Nothing)) // ?
     expect(lhs(Nothing)).toEqual(rhs(Nothing))
-    expect(lhs([])).toEqual(rhs([]))
   })
 
-  xit('monad law 4: join . map(map f) = map f . join', () => {
-    const map = monads.MaybeMonad.map
-    const join = monads.MaybeMonad.join
-    const f = id
-    const lhs = compose(join, map(map(f)))
-    const rhs = map(compose(f, join))
-
-    expect(lhs(1)).toEqual(rhs(1))
-  })
-
-  xit('monad law 5: join . unit = id', () => {
+  it('monad law 2', () => {
     const unit = monads.MaybeMonad.unit
-    const join = monads.MaybeMonad.join
-    const lhs = compose(join, unit)
+    const bind = monads.MaybeMonad.bind
+    const lhs = bind(unit)
     const rhs = id
 
-    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
+    expect(lhs(Maybe(null))).toEqual(rhs(Nothing)) // ?
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+  })
+
+  it('monad law 3', () => {
+    const bind = monads.MaybeMonad.bind
+    const f = x => Just(x + 1)
+    const g = x => Just(x + 2)
+    const lhs = compose(bind(g), bind(f))
+    const rhs = bind(compose(bind(g), f))
+
+    expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
+    expect(lhs(Maybe(null))).toEqual(rhs(Nothing)) // ?
+    expect(lhs(Nothing)).toEqual(rhs(Nothing))
   })
 })
 
 describe('FlatSequenceMonad', () => {
   it('applies identity', () => {
-    const fns = [
+    const fs = [
       x => x
     ]
 
-    const result = initial =>
-      monads.chainM(monads.FlatSequenceMonad, fns, initial)
+    const result = monads.chainM(monads.FlatSequenceMonad)(fs)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
     expect(result(null)).toEqual(null)
     expect(result([null])).toEqual([null])
+    expect(result(Nothing)).toEqual(Nothing)
+    expect(result([Nothing])).toEqual([Nothing])
+    expect(result([1, 2, 3])).toEqual([1, 2, 3])
   })
 
   it('flattens return values that are arrays', () => {
-    const fns = [
-      x => [x + 1, x + 2],
+    const fs = [
+      x => [[x + 1], x + 2],
       x => `${x}!`
     ]
 
-    const result = initial =>
-      monads.chainM(monads.FlatSequenceMonad, fns, initial)
+    const result = monads.chainM(monads.FlatSequenceMonad)(fs)
 
     expect(result(1)).toEqual(['2!', '3!'])
+    expect(result([1, 3])).toEqual(['2!', '3!', '4!', '5!'])
   })
 
-  it('monad law 1: map id = id', () => {
-    const lhs = monads.FlatSequenceMonad.map(id)
+  it('monad law 1', () => {
+    const unit = monads.FlatSequenceMonad.unit
+    const bind = monads.FlatSequenceMonad.bind
+    const f = id
+    const lhs = compose(bind(f), unit)
+    const rhs = f
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([1])).toEqual(rhs([1]))
+    expect(lhs([])).toEqual(rhs([]))
+  })
+
+  it('monad law 2', () => {
+    const unit = monads.FlatSequenceMonad.unit
+    const bind = monads.FlatSequenceMonad.bind
+    const lhs = bind(unit)
     const rhs = id
 
-    expect(lhs(1)).toEqual(rhs(1))
     expect(lhs([])).toEqual(rhs([]))
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
-    expect(lhs(null)).toEqual(rhs(null))
+    expect(lhs([1])).toEqual(rhs([1]))
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1, 2])).toEqual(rhs([1, 2]))
+    expect(lhs([[1], 2])).toEqual(rhs([[1], 2]))
   })
 
-  it('monad law 2: map f . map g = map(f . g)', () => {
-    const map = monads.FlatSequenceMonad.map
-    const f = x => x + 2
-    const g = x => x * 3
-    const lhs = compose(map(f), map(g))
-    const rhs = map(compose(f, g))
+  it('monad law 3', () => {
+    const bind = monads.FlatSequenceMonad.bind
+    const f = x => [x + 1, x + 2]
+    const g = x => [x + 3]
+    const lhs = compose(bind(g), bind(f))
+    const rhs = bind(compose(bind(g), f))
 
-    expect(lhs(1)).toEqual(rhs(1))
     expect(lhs([])).toEqual(rhs([]))
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
-    expect(lhs(null)).toEqual(rhs(null))
-  })
-
-  it('monad law 3: unit . f = map f . unit', () => {
-    const map = monads.FlatSequenceMonad.map
-    const unit = monads.FlatSequenceMonad.unit
-    const f = id
-    const lhs = compose(unit, f)
-    const rhs = compose(map(f), unit)
-
-    expect(lhs(1)).toEqual(rhs(1))
-    expect(lhs(0)).toEqual(rhs(0))
-    expect(lhs(null)).toEqual(rhs(null))
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
-    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1])).toEqual(rhs([1]))
   })
 })
 
 describe('FlatSequenceMonad . MaybeMonad', () => {
-  const monad = monads.composeM(monads.FlatSequenceMonad, monads.MaybeMonad)
+  const monad = monads.composeM(monads.FlatSequenceMonad)(monads.MaybeMonad)
 
-  it('always return an array', () => {
-    const fn = x => x
+  it('applies identity', () => {
+    const fs = [x => x]
 
-    const result = initial => monads.chainM(monad, [fn], initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual(1)
-    expect(result([1, 2, 3])).toEqual([1, 2, 3])
     expect(result([])).toEqual([])
+    expect(result([1])).toEqual([1])
+    expect(result([1, 2])).toEqual([1, 2])
     expect(result(null)).toEqual(Nothing)
     expect(result([undefined])).toEqual([Nothing])
   })
 
   it('processes each item', () => {
-    const fns = [
+    const fs = [
       x => [x + 1, x + 2],
       x => `${x}`,
       x => [`a - ${x}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = initial => monads.chainM(monad, fns, initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -194,13 +177,13 @@ describe('FlatSequenceMonad . MaybeMonad', () => {
   })
 
   it('processes each item with nil safety', () => {
-    const fns = [
+    const fs = [
       x => [x + 1, x + 2, x + 3, x + 4],
       x => x % 2 === 0 ? `${x}` : undefined,
       x => [`a - ${x.toString()}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = initial => monads.chainM(monad, fns, initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -216,16 +199,14 @@ describe('FlatSequenceMonad . MaybeMonad', () => {
 })
 
 // not intended to be used this way, but informative to see
-// does this indicate the monads are not quite monads / not fully defined enough to be generally composable?
 describe('MaybeMonad . FlatSequenceMonad', () => {
+  const monad = monads.composeM(monads.MaybeMonad)(monads.FlatSequenceMonad)
   it('always return a Maybe', () => {
-    const fns = [
+    const fs = [
       x => x
     ]
-    const monad = monads.composeM(monads.MaybeMonad, monads.FlatSequenceMonad)
 
-    const result = initial =>
-      monads.chainM(monad, fns, initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
@@ -235,14 +216,12 @@ describe('MaybeMonad . FlatSequenceMonad', () => {
   })
 
   it('flattens return values that are arrays', () => {
-    const fns = [
+    const fs = [
       x => [x + 1, x + 2],
       x => `${x}!`
     ]
-    const monad = monads.composeM(monads.MaybeMonad, monads.FlatSequenceMonad)
 
-    const result = initial =>
-      monads.chainM(monad, fns, initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual(['2!', '3!'])
     expect(result([1])).toEqual(['2!', '3!'])
@@ -250,15 +229,13 @@ describe('MaybeMonad . FlatSequenceMonad', () => {
   })
 
   it('leaves intermediate nils', () => {
-    const fns = [
+    const fs = [
       x => [x + 1, x + 2],
       x => `${x}!`,
       x => undefined
     ]
-    const monad = monads.composeM(monads.MaybeMonad, monads.FlatSequenceMonad)
 
-    const result = initial =>
-      monads.chainM(monad, fns, initial)
+    const result = monads.chainM(monad)(fs)
 
     expect(result(1)).toEqual([undefined, undefined]) // not great
   })

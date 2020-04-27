@@ -1,23 +1,26 @@
 const MaybeMonad = require('./maybe')
 const FlatSequenceMonad = require('./flatSequence')
+const { compose } = require('../common')
 
-const composeM = (m1, m2) => {
+const applyM = M => f => compose(M.bind(f), M.unit)
+
+const composeM = M1 => M2 => {
   return {
-    bind: m1.map(m2.bind),
-    unit: m1.unit
+    bind: compose(M1.bind, applyM(M2)),
+    unit: M1.unit
   }
 }
 
-const chainM = (monad, fns, initial) =>
-  fns.reduce(
-    (prev, fn) => monad.bind(prev, fn),
+const chainM = monad => fs => initial =>
+  fs.reduce(
+    (prev, f) => applyM(monad)(f)(prev),
     initial
   )
 
 module.exports = {
   MaybeMonad,
-  Nil: MaybeMonad.Nil,
   FlatSequenceMonad,
   composeM,
-  chainM
+  chainM,
+  applyM
 }
