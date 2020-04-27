@@ -18,8 +18,8 @@ const chainM = monad => fs => initial =>
   )
 
 module.exports = {
-  MaybeMonad,
-  FlatSequenceMonad,
+  Maybe: MaybeMonad,
+  FlatSequence: FlatSequenceMonad,
   composeM,
   chainM,
   applyM

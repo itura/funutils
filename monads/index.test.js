@@ -4,13 +4,13 @@ const monads = require('./')
 const { Maybe, Just, Nothing } = require('../types/maybe')
 const { compose, id } = require('../common')
 
-describe('MaybeMonad', () => {
-  it('passes most truthy values, and returns Nothing for most falsey values', () => {
+describe('Maybe', () => {
+  it('applies identity', () => {
     const fs = [
       x => x
     ]
 
-    const result = monads.chainM(monads.MaybeMonad)(fs)
+    const result = monads.chainM(monads.Maybe)(fs)
 
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
@@ -27,7 +27,7 @@ describe('MaybeMonad', () => {
       x => x.toString()
     ]
 
-    const result = monads.chainM(monads.MaybeMonad)(fs)
+    const result = monads.chainM(monads.Maybe)(fs)
 
     expect(result(0)).toEqual('0')
     expect(result([])).toEqual('')
@@ -39,8 +39,8 @@ describe('MaybeMonad', () => {
   })
 
   it('monad law 1', () => {
-    const unit = monads.MaybeMonad.unit
-    const bind = monads.MaybeMonad.bind
+    const unit = monads.Maybe.unit
+    const bind = monads.Maybe.bind
     const f = id
     const lhs = compose(bind(f), unit)
     const rhs = f
@@ -51,8 +51,8 @@ describe('MaybeMonad', () => {
   })
 
   it('monad law 2', () => {
-    const unit = monads.MaybeMonad.unit
-    const bind = monads.MaybeMonad.bind
+    const unit = monads.Maybe.unit
+    const bind = monads.Maybe.bind
     const lhs = bind(unit)
     const rhs = id
 
@@ -62,7 +62,7 @@ describe('MaybeMonad', () => {
   })
 
   it('monad law 3', () => {
-    const bind = monads.MaybeMonad.bind
+    const bind = monads.Maybe.bind
     const f = x => Just(x + 1)
     const g = x => Just(x + 2)
     const lhs = compose(bind(g), bind(f))
@@ -74,13 +74,13 @@ describe('MaybeMonad', () => {
   })
 })
 
-describe('FlatSequenceMonad', () => {
+describe('FlatSequence', () => {
   it('applies identity', () => {
     const fs = [
       x => x
     ]
 
-    const result = monads.chainM(monads.FlatSequenceMonad)(fs)
+    const result = monads.chainM(monads.FlatSequence)(fs)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -97,15 +97,15 @@ describe('FlatSequenceMonad', () => {
       x => `${x}!`
     ]
 
-    const result = monads.chainM(monads.FlatSequenceMonad)(fs)
+    const result = monads.chainM(monads.FlatSequence)(fs)
 
     expect(result(1)).toEqual(['2!', '3!'])
     expect(result([1, 3])).toEqual(['2!', '3!', '4!', '5!'])
   })
 
   it('monad law 1', () => {
-    const unit = monads.FlatSequenceMonad.unit
-    const bind = monads.FlatSequenceMonad.bind
+    const unit = monads.FlatSequence.unit
+    const bind = monads.FlatSequence.bind
     const f = id
     const lhs = compose(bind(f), unit)
     const rhs = f
@@ -116,8 +116,8 @@ describe('FlatSequenceMonad', () => {
   })
 
   it('monad law 2', () => {
-    const unit = monads.FlatSequenceMonad.unit
-    const bind = monads.FlatSequenceMonad.bind
+    const unit = monads.FlatSequence.unit
+    const bind = monads.FlatSequence.bind
     const lhs = bind(unit)
     const rhs = id
 
@@ -130,7 +130,7 @@ describe('FlatSequenceMonad', () => {
   })
 
   it('monad law 3', () => {
-    const bind = monads.FlatSequenceMonad.bind
+    const bind = monads.FlatSequence.bind
     const f = x => [x + 1, x + 2]
     const g = x => [x + 3]
     const lhs = compose(bind(g), bind(f))
@@ -141,8 +141,8 @@ describe('FlatSequenceMonad', () => {
   })
 })
 
-describe('FlatSequenceMonad . MaybeMonad', () => {
-  const monad = monads.composeM(monads.FlatSequenceMonad)(monads.MaybeMonad)
+describe('FlatSequence . Maybe', () => {
+  const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)
 
   it('applies identity', () => {
     const fs = [x => x]
@@ -199,8 +199,8 @@ describe('FlatSequenceMonad . MaybeMonad', () => {
 })
 
 // not intended to be used this way, but informative to see
-describe('MaybeMonad . FlatSequenceMonad', () => {
-  const monad = monads.composeM(monads.MaybeMonad)(monads.FlatSequenceMonad)
+describe('Maybe . FlatSequence', () => {
+  const monad = monads.composeM(monads.Maybe)(monads.FlatSequence)
   it('always return a Maybe', () => {
     const fs = [
       x => x
