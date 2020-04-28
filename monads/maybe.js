@@ -4,11 +4,11 @@ const unit = x => {
   return Maybe(x)
 }
 
-const bind = f => Mx => {
+const bind = f => {
   return caseMap({
     nothing: () => Nothing,
     just: value => f(value)
-  })(Mx)
+  })
 }
 
 const MaybeMonad = {

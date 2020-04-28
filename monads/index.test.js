@@ -141,6 +141,75 @@ describe('FlatSequence', () => {
   })
 })
 
+describe('SomethingMonad', () => {
+  const monad = monads.Something
+  it('applies identity', () => {
+    const fs = [
+      x => x
+    ]
+
+    const result = monads.chainM(monad)(fs)
+
+    expect(result(1)).toEqual(1)
+    expect(result([])).toEqual([])
+    expect(result(null)).toEqual(Nothing)
+    expect(result([null])).toEqual([])
+    expect(result(Nothing)).toEqual(Nothing)
+    expect(result([Nothing])).toEqual([])
+    expect(result([1, 2, 3])).toEqual([1, 2, 3])
+  })
+
+  it('flattens and filters Nothings from all sequences', () => {
+    const fs = [
+      x => [x + 1, x + 2, x + 3],
+      x => x % 2 === 0 ? [undefined] : [x],
+      x => `${x}`
+    ]
+
+    const result = monads.chainM(monad)(fs)
+
+    expect(result(1)).toEqual(['3'])
+    expect(result([1, 11])).toEqual(['3', '13'])
+  })
+
+  it('monad law 1', () => {
+    const unit = monad.unit
+    const bind = monad.bind
+    const f = id
+    const lhs = compose(bind(f), unit)
+    const rhs = f
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([1])).toEqual(rhs([1]))
+    expect(lhs([])).toEqual(rhs([]))
+  })
+
+  it('monad law 2', () => {
+    const unit = monad.unit
+    const bind = monad.bind
+    const lhs = bind(unit)
+    const rhs = id
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1])).toEqual(rhs([1]))
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1, 2])).toEqual(rhs([1, 2]))
+    expect(lhs([[1], 2])).toEqual(rhs([[1], 2]))
+  })
+
+  it('monad law 3', () => {
+    const bind = monad.bind
+    const f = x => [x + 1, x + 2]
+    const g = x => [x + 3]
+    const lhs = compose(bind(g), bind(f))
+    const rhs = bind(compose(bind(g), f))
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1])).toEqual(rhs([1]))
+  })
+})
+
 describe('FlatSequence . Maybe', () => {
   const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)
 
@@ -157,7 +226,7 @@ describe('FlatSequence . Maybe', () => {
     expect(result([undefined])).toEqual([Nothing])
   })
 
-  it('processes each item', () => {
+  it('flattens results, applying following transforms to each', () => {
     const fs = [
       x => [x + 1, x + 2],
       x => `${x}`,
@@ -176,7 +245,7 @@ describe('FlatSequence . Maybe', () => {
     ])
   })
 
-  it('processes each item with nil safety', () => {
+  it('returns Nothing instead of applying a Nothing', () => {
     const fs = [
       x => [x + 1, x + 2, x + 3, x + 4],
       x => x % 2 === 0 ? `${x}` : undefined,
