@@ -13,6 +13,10 @@ const filter = fn => array => array.filter(fn)
 const compact = () => array => array.filter(x => x || x === 0)
 const flatten = (n = 1) => array => array.flat(n)
 const reduce = (fn, initial) => array => array.reduce(fn, initial)
+const tap = fn => x => {
+  fn(x)
+  return x
+}
 
 module.exports = {
   chain,
@@ -22,5 +26,6 @@ module.exports = {
   flatten,
   reduce,
   compose,
-  id
+  id,
+  tap
 }

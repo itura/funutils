@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { LazySeqM } = require('./LazySeqM')
+const LazySeqM = require('./LazySeqM')
 const monads = require('../monads')
 const { Nothing } = require('../types/maybe')
 

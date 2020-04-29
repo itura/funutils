@@ -1,71 +1,89 @@
 /* eslint-env jest */
 
-const { chain, map, filter, compact, flatten, reduce } = require('./')
+const funutils = require('./')
 
-test('funutils', () => {
-  expect(
-    chain(
-      [1, 2, 3]
-    )
-  ).toEqual(
-    [1, 2, 3]
-  )
+describe('funutils', () => {
+  test('common', () => {
+    expect(
+      funutils.chain(
+        [1, 2, 3],
+        funutils.map(x => x + 1),
+        funutils.filter(x => x % 2 === 1),
+        funutils.map(x => [x, null]),
+        funutils.flatten(),
+        funutils.compact(),
+        funutils.reduce(
+          (acc, x) => acc + (x === null ? 2 : x),
+          0
+        )
+      )
+    ).toEqual(3)
+  })
 
-  expect(
-    chain(
-      [1, 2, 3],
-      map(x => x + 1)
-    )
-  ).toEqual(
-    [2, 3, 4]
-  )
+  test('types', () => {
+    const { Maybe } = funutils.types
+    expect(Maybe.Maybe('hi')).toEqual(Maybe.Just('hi'))
+    expect(Maybe.Maybe(null)).toEqual(Maybe.Nothing)
+    expect(
+      Maybe.Just('hi').map(funutils.id)
+    ).toEqual(Maybe.Just('hi'))
+    expect(
+      Maybe.Nothing.map(funutils.id)
+    ).toEqual(Maybe.Nothing)
+  })
 
-  expect(
-    chain(
-      [1, 2, 3],
-      filter(x => x % 2 === 0)
-    )
-  ).toEqual(
-    [2]
-  )
+  test('LazySeq', () => {
+    const data = () => [1, 2, 3].values()
+    const seq = funutils.LazySeq(data)
+      .map(x => x + 1)
+      .filter(x => x % 2 === 1)
+      .map(x => [x, null])
+      .flatten()
+      .compact()
 
-  expect(
-    chain(
-      [0, 1, 2, 3, [], undefined, null, ''],
-      compact(x => x % 2 === 0)
-    )
-  ).toEqual(
-    [0, 1, 2, 3, []]
-  )
+    expect(seq.take(3)).toEqual([3])
+  })
 
-  expect(
-    chain(
-      [1, [2], [[3]]],
-      flatten()
-    )
-  ).toEqual(
-    [1, 2, [3]]
-  )
+  test('LazySeqM', () => {
+    const data = () => [1, 2, 3].values()
+    const seq = funutils.LazySeqM(data, funutils.monads.Maybe)
+      .map(x => x + 1)
+      .map(x => x % 2 === 1 ? x : null)
+      .map(x => x.toString())
 
-  expect(
-    chain(
-      [1, 2, 3],
-      reduce((sum, x) => sum + x, 0)
-    )
-  ).toEqual(
-    6
-  )
+    expect(seq.take(3)).toEqual(['3'])
+  })
 
-  expect(
-    chain(
-      [1, undefined, 2, [3], 4],
-      compact(),
-      flatten(),
-      filter(x => x < 4),
-      map(x => x - 1),
-      reduce((sum, x) => sum + x, 0)
-    )
-  ).toEqual(
-    3
-  )
+  test('monads', () => {
+    const { monads, id } = funutils
+
+    expect(
+      monads.applyM(monads.Id)(id)(1)
+    ).toEqual(1)
+
+    expect(
+      monads.applyM(monads.Maybe)(id)(1)
+    ).toEqual(1)
+
+    expect(
+      monads.applyM(monads.Sequence())(id)(1)
+    ).toEqual(1)
+
+    expect(
+      monads.applyM(monads.FlatSequence)(id)(1)
+    ).toEqual(1)
+
+    expect(
+      monads.applyM(monads.Something)(id)(1)
+    ).toEqual(1)
+
+    expect(
+      monads.chainM(monads.Something)([id])(1)
+    ).toEqual(1)
+
+    const m = monads.composeM(monads.FlatSequence)(monads.Maybe)
+    expect(
+      monads.chainM(m)([id])([[1], null, 2])
+    ).toEqual([1, funutils.types.Maybe.Nothing, 2])
+  })
 })

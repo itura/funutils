@@ -34,4 +34,4 @@ const LazySeqM = (startSequence, monad) => {
   }
 }
 
-module.exports = { LazySeqM }
+module.exports = LazySeqM
