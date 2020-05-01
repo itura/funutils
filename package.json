@@ -1,6 +1,6 @@
 {
   "name": "@austin-garrard/funutils",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Fun functional utilities for javascript",
   "homepage": "https://github.com/austin-garrard/funutils",
   "main": "index.js",
