@@ -1,7 +1,14 @@
 const monads = require('../monads')
 const { Nothing } = require('../types/maybe')
 
-const LazySeqM = (startSequence, monad) => {
+const integers = function * () {
+  let i = 0
+  while (true) {
+    yield i
+    i++
+  }
+}
+const LazySeqM = (monad, startSequence = integers) => {
   const fs = []
 
   const map = function (f) {

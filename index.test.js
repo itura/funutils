@@ -44,7 +44,7 @@ describe('funutils', () => {
 
   test('LazySeqM', () => {
     const data = () => [1, 2, 3].values()
-    const seq = funutils.LazySeqM(data, funutils.monads.Maybe)
+    const seq = funutils.LazySeqM(funutils.monads.Maybe, data)
       .map(x => x + 1)
       .map(x => x % 2 === 1 ? x : null)
       .map(x => x.toString())
