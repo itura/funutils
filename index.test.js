@@ -33,13 +33,11 @@ describe('funutils', () => {
   })
 
   test('LazySeq', () => {
-    const data = () => [1, 2, 3].values()
+    const data = () => [1, 2, null, 3].values()
     const seq = funutils.LazySeq(data)
+      .compact()
       .map(x => x + 1)
       .filter(x => x % 2 === 1)
-      .map(x => [x, null])
-      .flatten()
-      .compact()
 
     expect(seq.take(3)).toEqual([3])
   })
