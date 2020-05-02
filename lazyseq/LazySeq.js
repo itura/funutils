@@ -1,5 +1,5 @@
 
-const LazySeq = (startSequence, monad) => {
+const LazySeq = (generator) => {
   const fns = []
 
   const map = function (fn) {
@@ -24,7 +24,7 @@ const LazySeq = (startSequence, monad) => {
   }
 
   const take = n => {
-    const iterator = startSequence()
+    const iterator = generator()
 
     const results = []
     for (let i = 0; i < n; i++) {

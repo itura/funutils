@@ -8,7 +8,7 @@ const integers = function * () {
     i++
   }
 }
-const LazySeqM = (monad, startSequence = integers) => {
+const LazySeqM = (monad, generator = integers) => {
   const fs = []
 
   const map = function (f) {
@@ -17,7 +17,7 @@ const LazySeqM = (monad, startSequence = integers) => {
   }
 
   const take = n => {
-    const iterator = startSequence()
+    const iterator = generator()
 
     let results = []
     for (let i = 0; i < n; i++) {

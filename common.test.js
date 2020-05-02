@@ -32,7 +32,7 @@ test('common', () => {
   expect(
     chain(
       [0, 1, 2, 3, [], undefined, null, ''],
-      compact(x => x % 2 === 0)
+      compact()
     )
   ).toEqual(
     [0, 1, 2, 3, []]
