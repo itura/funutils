@@ -31,9 +31,9 @@ describe('LazySeqM', () => {
       .map(i => i === '3' ? undefined : `${i}!`)
       .map(i => `@${i}`)
 
-    expect(transform.take(4)).toEqual(['@2!', '@4!'])
-    expect(transform.take(3)).toEqual(['@2!', '@4!'])
-    expect(transform.take(2)).toEqual(['@2!'])
+    expect(transform.take(4)).toEqual(['@2!', Nothing, '@4!'])
+    expect(transform.take(3)).toEqual(['@2!', Nothing, '@4!'])
+    expect(transform.take(2)).toEqual(['@2!', Nothing])
     expect(transform.take(1)).toEqual(['@2!'])
     expect(transform.take(0)).toEqual([])
 
@@ -41,9 +41,9 @@ describe('LazySeqM', () => {
       .map(i => [i, i])
       .map(i => `🤪${i}`)
 
-    expect(transform.take(4)).toEqual(['🤪@2!', '🤪@2!', '🤪@4!', '🤪@4!'])
-    expect(transform.take(3)).toEqual(['🤪@2!', '🤪@2!', '🤪@4!', '🤪@4!'])
-    expect(transform.take(2)).toEqual(['🤪@2!', '🤪@2!'])
+    expect(transform.take(4)).toEqual(['🤪@2!', '🤪@2!', Nothing, '🤪@4!', '🤪@4!'])
+    expect(transform.take(3)).toEqual(['🤪@2!', '🤪@2!', Nothing, '🤪@4!', '🤪@4!'])
+    expect(transform.take(2)).toEqual(['🤪@2!', '🤪@2!', Nothing])
     expect(transform.take(1)).toEqual(['🤪@2!', '🤪@2!'])
     expect(transform.take(0)).toEqual([])
 

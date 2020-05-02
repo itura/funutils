@@ -1,5 +1,4 @@
 const monads = require('../monads')
-const { Nothing } = require('../maybe')
 
 const integers = function * () {
   let i = 0
@@ -28,9 +27,7 @@ const LazySeqM = (monad, generator = integers) => {
 
       const result = monads.chainM(monad)(fs)(next.value)
 
-      if (result !== Nothing) {
-        results = results.concat(result)
-      }
+      results = results.concat(result)
     }
 
     return results
