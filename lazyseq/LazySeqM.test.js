@@ -56,7 +56,7 @@ describe('LazySeqM', () => {
     ])
   })
 
-  it('defaults to increasing integers as the generator', () => {
+  it('defaults to increasing integers starting at 0 as the generator', () => {
     const transform = LazySeqM(monads.FlatSequence)
       .map(i => [i + 1])
 

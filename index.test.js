@@ -18,6 +18,12 @@ describe('funutils', () => {
         )
       )
     ).toEqual(3)
+
+    return funutils.chainP(
+      Promise.resolve(1),
+      x => Promise.resolve(x + 2),
+      r => expect(r).toEqual(3)
+    )
   })
 
   test('types', () => {
@@ -81,7 +87,7 @@ describe('funutils', () => {
 
     const m = monads.composeM(monads.FlatSequence)(monads.Maybe)
     expect(
-      monads.chainM(m)([id])([[1], null, 2])
-    ).toEqual([1, funutils.types.Maybe.Nothing, 2])
+      monads.chainM(m)([id])([[1, 2], null, [4], 5])
+    ).toEqual([1, 2, funutils.types.Maybe.Nothing, 4, 5])
   })
 })
