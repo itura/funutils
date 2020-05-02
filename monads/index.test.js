@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
 const monads = require('./')
-const { Maybe, Just, Nothing } = require('../types/maybe')
+const { Maybe, Just, Nothing } = require('../maybe')
 const { compose, id } = require('../common')
 
 describe('Maybe', () => {

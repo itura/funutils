@@ -1,4 +1,4 @@
-const { Nothing, caseMap, Maybe } = require('../types/maybe')
+const { Nothing, caseMap, Maybe } = require('../maybe')
 
 const unit = x => {
   return Maybe(x)

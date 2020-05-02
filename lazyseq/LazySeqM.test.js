@@ -2,7 +2,7 @@
 
 const LazySeqM = require('./LazySeqM')
 const monads = require('../monads')
-const { Nothing } = require('../types/maybe')
+const { Nothing } = require('../maybe')
 
 describe('LazySeqM', () => {
   it('chains the mapping functions through the monad for each value of the generator', () => {

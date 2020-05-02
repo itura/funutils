@@ -1,5 +1,5 @@
 const MaybeMonad = require('./maybe')
-const { Nothing } = require('../types/maybe')
+const { Nothing } = require('../maybe')
 const SequenceMonad = require('./sequence')
 const { compose, id, filter } = require('../common')
 

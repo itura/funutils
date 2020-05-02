@@ -26,16 +26,16 @@ describe('funutils', () => {
     )
   })
 
-  test('types', () => {
-    const { Maybe } = funutils.types
-    expect(Maybe.Maybe('hi')).toEqual(Maybe.Just('hi'))
-    expect(Maybe.Maybe(null)).toEqual(Maybe.Nothing)
+  test('Maybe', () => {
+    const { Maybe, Just, Nothing } = funutils.Maybe
+    expect(Maybe('hi')).toEqual(Just('hi'))
+    expect(Maybe(null)).toEqual(Nothing)
     expect(
-      Maybe.Just('hi').map(funutils.id)
-    ).toEqual(Maybe.Just('hi'))
+      Just('hi').map(funutils.id)
+    ).toEqual(Just('hi'))
     expect(
-      Maybe.Nothing.map(funutils.id)
-    ).toEqual(Maybe.Nothing)
+      Nothing.map(funutils.id)
+    ).toEqual(Nothing)
   })
 
   test('LazySeq', () => {
@@ -88,6 +88,6 @@ describe('funutils', () => {
     const m = monads.composeM(monads.FlatSequence)(monads.Maybe)
     expect(
       monads.chainM(m)([id])([[1, 2], null, [4], 5])
-    ).toEqual([1, 2, funutils.types.Maybe.Nothing, 4, 5])
+    ).toEqual([1, 2, funutils.Maybe.Nothing, 4, 5])
   })
 })

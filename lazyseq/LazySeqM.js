@@ -1,5 +1,5 @@
 const monads = require('../monads')
-const { Nothing } = require('../types/maybe')
+const { Nothing } = require('../maybe')
 
 const integers = function * () {
   let i = 0
