@@ -5,7 +5,7 @@ const monads = require('../monads')
 const { Nothing } = require('../maybe')
 
 describe('LazySeqM', () => {
-  it('chains the mapping functions through the monad for each value of the generator', () => {
+  it('chains the mapping functions through the sequence monad for each value of the generator', () => {
     const data = () => [1, 2, 3].values()
 
     const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)

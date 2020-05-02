@@ -75,12 +75,10 @@ describe('Maybe', () => {
 })
 
 describe('FlatSequence', () => {
-  it('applies identity', () => {
-    const fs = [
-      x => x
-    ]
+  const chainM = monads.chainM(monads.FlatSequence)
 
-    const result = monads.chainM(monads.FlatSequence)(fs)
+  it('applies identity', () => {
+    const result = chainM([id])
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -89,18 +87,48 @@ describe('FlatSequence', () => {
     expect(result(Nothing)).toEqual(Nothing)
     expect(result([Nothing])).toEqual([Nothing])
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
+    expect(result([[1, 2], 3])).toEqual([1, 2, 3])
+    expect(result([[1, null], 3])).toEqual([1, null, 3])
   })
 
-  it('flattens return values that are arrays', () => {
-    const fs = [
-      x => [[x + 1], x + 2],
+  it('applies functions to a single element', () => {
+    const result = chainM([
+      x => x + 1,
       x => `${x}!`
-    ]
+    ])
 
-    const result = monads.chainM(monads.FlatSequence)(fs)
+    expect(result(1)).toEqual('2!')
+  })
 
-    expect(result(1)).toEqual(['2!', '3!'])
-    expect(result([1, 3])).toEqual(['2!', '3!', '4!', '5!'])
+  it('applies functions to each element of an input sequence', () => {
+    const result = chainM([
+      x => x + 1,
+      x => `${x}!`
+    ])
+
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['2!'])
+    expect(result([1, 2])).toEqual(['2!', '3!'])
+  })
+
+  it('applies functions to each element of a sequence returned by a previous function', () => {
+    const result = chainM([
+      x => [x, [x, x]],
+      x => `${x}!`
+    ])
+
+    expect(result(1)).toEqual(['1!', '1,1!'])
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['1!', '1,1!'])
+    expect(result([1, 2])).toEqual(['1!', '1,1!', '2!', '2,2!'])
+  })
+
+  it('does nothing to return values from the last function', () => {
+    const result = chainM([
+      () => [1, [2, 3]]
+    ])
+
+    expect(result()).toEqual([1, [2, 3]])
   })
 
   it('monad law 1', () => {
@@ -112,6 +140,7 @@ describe('FlatSequence', () => {
 
     expect(lhs(1)).toEqual(rhs(1))
     expect(lhs([1])).toEqual(rhs([1]))
+    expect(lhs([1, 2])).toEqual(rhs([1, 2]))
     expect(lhs([])).toEqual(rhs([]))
   })
 
@@ -142,13 +171,12 @@ describe('FlatSequence', () => {
 })
 
 describe('SomethingMonad', () => {
-  const monad = monads.Something
-  it('applies identity', () => {
-    const fs = [
-      x => x
-    ]
+  const chainM = monads.chainM(monads.Something)
 
-    const result = monads.chainM(monad)(fs)
+  it('applies identity', () => {
+    const result = chainM([
+      x => x
+    ])
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -159,17 +187,192 @@ describe('SomethingMonad', () => {
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
   })
 
-  it('flattens and filters Nothings from all sequences', () => {
-    const fs = [
-      x => [x + 1, x + 2, x + 3],
-      x => x % 2 === 0 ? [undefined] : [x],
-      x => `${x}`
-    ]
+  it('applies functions to a single element', () => {
+    const result = chainM([
+      x => x + 1,
+      x => `${x}!`
+    ])
 
-    const result = monads.chainM(monad)(fs)
+    expect(result(1)).toEqual('2!')
+  })
 
-    expect(result(1)).toEqual(['3'])
-    expect(result([1, 11])).toEqual(['3', '13'])
+  it('returns Nothing instead of applying functions to Nothings from the input', () => {
+    const result = chainM([
+      x => x.toString()
+    ])
+
+    expect(result(null)).toEqual(Nothing)
+  })
+
+  it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
+    const result = chainM([
+      x => null,
+      x => x.toString()
+    ])
+
+    expect(result(1)).toEqual(Nothing)
+  })
+
+  it('applies functions to each element of an input sequence', () => {
+    const result = chainM([
+      x => x + 1,
+      x => `${x}!`
+    ])
+
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['2!'])
+    expect(result([1, 2])).toEqual(['2!', '3!'])
+  })
+
+  it('applies functions to each element of a sequence returned by a previous function', () => {
+    const result = chainM([
+      x => [x, [x, x]],
+      x => `${x}!`
+    ])
+
+    expect(result(1)).toEqual(['1!', '1,1!'])
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['1!', '1,1!'])
+    expect(result([1, 2])).toEqual(['1!', '1,1!', '2!', '2,2!'])
+  })
+
+  it('filters nested Nothings from the results of previous functions', () => {
+    const result = chainM([
+      x => [null, 1, Nothing],
+      x => x.toString()
+    ])
+
+    expect(result(1)).toEqual(['1'])
+  })
+
+  it('does nothing to return values from the last function', () => {
+    const result = chainM([
+      x => [x, [x, x], null]
+    ])
+
+    expect(result(1)).toEqual([1, [1, 1], null])
+  })
+
+  it('monad law 1', () => {
+    const unit = monads.Something.unit
+    const bind = monads.Something.bind
+    const f = id
+    const lhs = compose(bind(f), unit)
+    const rhs = f
+
+    expect(lhs(1)).toEqual(rhs(1))
+    expect(lhs([1])).toEqual(rhs([1]))
+    expect(lhs([])).toEqual(rhs([]))
+  })
+
+  it('monad law 2', () => {
+    const unit = monads.Something.unit
+    const bind = monads.Something.bind
+    const lhs = bind(unit)
+    const rhs = id
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1])).toEqual(rhs([1]))
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1, 2])).toEqual(rhs([1, 2]))
+    expect(lhs([[1], 2])).toEqual(rhs([[1], 2]))
+  })
+
+  it('monad law 3', () => {
+    const bind = monads.Something.bind
+    const f = x => [x + 1, x + 2]
+    const g = x => [x + 3]
+    const lhs = compose(bind(g), bind(f))
+    const rhs = bind(compose(bind(g), f))
+
+    expect(lhs([])).toEqual(rhs([]))
+    expect(lhs([1])).toEqual(rhs([1]))
+  })
+})
+
+describe('FlatSequence . Maybe', () => {
+  const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)
+  const chainM = monads.chainM(monad)
+
+  it('applies identity', () => {
+    const result = chainM([
+      x => x
+    ])
+
+    expect(result(1)).toEqual(1)
+    expect(result([])).toEqual([])
+    expect(result(null)).toEqual(Nothing)
+    expect(result([null])).toEqual([Nothing])
+    expect(result(Nothing)).toEqual(Nothing)
+    expect(result([Nothing])).toEqual([Nothing])
+    expect(result([1, 2, 3])).toEqual([1, 2, 3])
+  })
+
+  it('applies functions to a single element', () => {
+    const result = chainM([
+      x => x + 1,
+      x => `${x}!`
+    ])
+
+    expect(result(1)).toEqual('2!')
+  })
+
+  it('returns Nothing instead of applying functions to Nothings from the input', () => {
+    const result = chainM([
+      x => x.toString()
+    ])
+
+    expect(result(null)).toEqual(Nothing)
+  })
+
+  it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
+    const result = chainM([
+      x => null,
+      x => x.toString()
+    ])
+
+    expect(result(1)).toEqual(Nothing)
+  })
+
+  it('applies functions to each element of an input sequence', () => {
+    const result = chainM([
+      x => x + 1,
+      x => `${x}!`
+    ])
+
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['2!'])
+    expect(result([1, 2])).toEqual(['2!', '3!'])
+  })
+
+  it('applies functions to each element of a sequence returned by a previous function', () => {
+    const result = chainM([
+      x => [x, [x, x]],
+      x => `${x}!`
+    ])
+
+    expect(result(1)).toEqual(['1!', '1,1!'])
+    expect(result([])).toEqual([])
+    expect(result([1])).toEqual(['1!', '1,1!'])
+    expect(result([1, 2])).toEqual(['1!', '1,1!', '2!', '2,2!'])
+  })
+
+  it('returns Nothing instead of applying functions to nested Nothings from previous functions', () => {
+    const result = chainM([
+      x => [null, 1, Nothing],
+      x => x.toString()
+    ])
+
+    expect(result(1)).toEqual([Nothing, '1', Nothing])
+  })
+
+  it('does nothing to return values from the last function', () => {
+    const result = chainM([
+      x => [x, [x, x], null]
+    ])
+
+    expect(result(1)).toEqual([1, [1, 1], null])
   })
 
   it('monad law 1', () => {
@@ -208,24 +411,8 @@ describe('SomethingMonad', () => {
     expect(lhs([])).toEqual(rhs([]))
     expect(lhs([1])).toEqual(rhs([1]))
   })
-})
 
-describe('FlatSequence . Maybe', () => {
-  const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)
-
-  it('applies identity', () => {
-    const fs = [x => x]
-
-    const result = monads.chainM(monad)(fs)
-
-    expect(result(1)).toEqual(1)
-    expect(result([])).toEqual([])
-    expect(result([1])).toEqual([1])
-    expect(result([1, 2])).toEqual([1, 2])
-    expect(result(null)).toEqual(Nothing)
-    expect(result([undefined])).toEqual([Nothing])
-  })
-
+  // original tests
   it('flattens results, applying following transforms to each', () => {
     const fs = [
       x => [x + 1, x + 2],

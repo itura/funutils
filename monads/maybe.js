@@ -1,8 +1,6 @@
 const { Nothing, caseMap, Maybe } = require('../maybe')
 
-const unit = x => {
-  return Maybe(x)
-}
+const unit = Maybe
 
 const bind = f => {
   return caseMap({
