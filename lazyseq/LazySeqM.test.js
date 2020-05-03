@@ -66,4 +66,41 @@ describe('LazySeqM', () => {
     expect(transform.take(1)).toEqual([1])
     expect(transform.take(0)).toEqual([])
   })
+
+  it('can be reduced to a promise', async () => {
+    const generateData = x => [x + 1, x + 2]
+
+    const insertToDb = data => {
+      const result = `Inserted ${data}`
+      return Promise.resolve(result)
+    }
+
+    const transform = LazySeqM(monads.FlatSequence)
+      .map(generateData)
+      .map(insertToDb)
+
+    const fireAndForget = await transform
+      .reduce(
+        (chain, p) => chain.then(() => p),
+        Promise.resolve()
+      )
+      .take(2)
+
+    expect(fireAndForget).toEqual('Inserted 3')
+
+    const trackEverything = await transform
+      .reduce(
+        (chain, p) => chain.then(results =>
+          p.then(r => results.concat(r))),
+        Promise.resolve([])
+      )
+      .take(2)
+
+    expect(trackEverything).toEqual([
+      'Inserted 1',
+      'Inserted 2',
+      'Inserted 2',
+      'Inserted 3'
+    ])
+  })
 })

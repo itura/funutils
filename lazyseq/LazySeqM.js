@@ -15,8 +15,19 @@ const LazySeqM = (monad, generator = integers) => {
     return this
   }
 
+  let acc, _reduce
+  const reduce = function (f, initial) {
+    acc = initial
+    _reduce = x => {
+      acc = f(acc, x)
+      return x
+    }
+    return this
+  }
+
   const take = n => {
     const iterator = generator()
+    const _fs = fs.concat(_reduce)
 
     let results = []
     for (let i = 0; i < n; i++) {
@@ -25,16 +36,19 @@ const LazySeqM = (monad, generator = integers) => {
         break
       }
 
-      const result = monads.chainM(monad)(fs)(next.value)
-
-      results = results.concat(result)
+      if (_reduce) {
+        monads.chainM(monad)(_fs)(next.value)
+      } else {
+        const result = monads.chainM(monad)(fs)(next.value)
+        results = results.concat(result)
+      }
     }
 
-    return results
+    return _reduce ? acc : results
   }
 
   return {
-    map, take
+    map, reduce, take
   }
 }
 
