@@ -1,6 +1,7 @@
 /* eslint-env jest */
 
 const LazySeqM = require('./LazySeqM')
+const LazySeq = require('./LazySeq')
 const monads = require('../monads')
 const { performance } = require('perf_hooks')
 
@@ -28,11 +29,11 @@ describe('LazySeqM promise reducer performance', () => {
     .map(generateData)
     .map(insertToDb)
 
-  test(`collecting all vs fire and forget @ ${count} results`, async () => {
+  test(`collecting all vs fire and forget @ ${count}`, async () => {
     const [fireAndForget, d0] = await time(() =>
       transform
         .reduce(
-          (chain, p) => chain.then(() => p),
+          (chain, next) => chain.then(() => next),
           Promise.resolve()
         )
         .take(count)
@@ -44,8 +45,10 @@ describe('LazySeqM promise reducer performance', () => {
     const [collectAll, d1] = await time(() =>
       transform
         .reduce(
-          (chain, p) => chain.then(results =>
-            p.then(r => results.concat(r))),
+          (chain, next) =>
+            chain.then(results =>
+              next.then(r => results.concat(r))
+            ),
           Promise.resolve([])
         )
         .take(count)
@@ -54,10 +57,104 @@ describe('LazySeqM promise reducer performance', () => {
     expect(collectAll.length).toEqual(count * 2)
     expect(inserted).toEqual(count * 4)
 
+    const [collectAllQuick, d2] = await time(() =>
+      transform
+        .reduce(
+          (chain, next) =>
+            chain.then(results =>
+              next.then(r => {
+                results.push(r) // it's fast bc we mutate the acc
+                return results
+              })
+            ),
+          Promise.resolve([])
+        )
+        .take(count)
+    )
+
+    expect(collectAllQuick.length).toEqual(count * 2)
+    expect(inserted).toEqual(count * 6)
+
     console.log('fireAndForget', d0.toFixed(0), 'ms')
     console.log('collectAll', d1.toFixed(0), 'ms')
+    console.log('collectAllQuick', d2.toFixed(0), 'ms')
+    console.log('===========')
 
     expect(d0 < 100).toEqual(true)
     expect(d1 < 3500).toEqual(true)
+    expect(d2 < 100).toEqual(true)
+  })
+})
+
+describe('LazySeq promise reducer performance', () => {
+  const count = 20000
+
+  const generateData = x => x + 1
+
+  let inserted = 0
+  const insertToDb = data => {
+    const result = `Inserted ${data}`
+    inserted++
+    return Promise.resolve(result)
+  }
+
+  const transform = LazySeq()
+    .map(generateData)
+    .map(insertToDb)
+
+  test(`collecting all vs fire and forget @ ${count}`, async () => {
+    const [fireAndForget, d0] = await time(() =>
+      transform
+        .reduce(
+          (chain, next) => chain.then(() => next),
+          Promise.resolve()
+        )
+        .take(count)
+    )
+
+    expect(fireAndForget).toEqual(`Inserted ${count}`)
+    expect(inserted).toEqual(count)
+
+    const [collectAll, d1] = await time(() =>
+      transform
+        .reduce(
+          (chain, next) =>
+            chain.then(results =>
+              next.then(r => results.concat(r))
+            ),
+          Promise.resolve([])
+        )
+        .take(count)
+    )
+
+    expect(collectAll.length).toEqual(count)
+    expect(inserted).toEqual(count * 2)
+
+    const [collectAllQuick, d2] = await time(() =>
+      transform
+        .reduce(
+          (chain, next) =>
+            chain.then(results =>
+              next.then(r => {
+                results.push(r) // it's fast bc we mutate the acc
+                return results
+              })
+            ),
+          Promise.resolve([])
+        )
+        .take(count)
+    )
+
+    expect(collectAllQuick.length).toEqual(count)
+    expect(inserted).toEqual(count * 3)
+
+    console.log('fireAndForget', d0.toFixed(0), 'ms')
+    console.log('collectAll', d1.toFixed(0), 'ms')
+    console.log('collectAllQuick', d2.toFixed(0), 'ms')
+    console.log('===========')
+
+    expect(d0 < 50).toEqual(true)
+    expect(d1 < 3500).toEqual(true)
+    expect(d2 < 50).toEqual(true)
   })
 })

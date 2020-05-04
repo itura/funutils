@@ -72,4 +72,50 @@ describe('LazySeq', () => {
       expect(compact.take(8)).toEqual([0, 1, 2])
     })
   })
+
+  it('defaults to increasing integers starting at 0 as the generator', () => {
+    const transform = LazySeq()
+      .map(i => [i + 1])
+
+    expect(transform.take(4)).toEqual([1, 2, 3, 4])
+    expect(transform.take(3)).toEqual([1, 2, 3])
+    expect(transform.take(2)).toEqual([1, 2])
+    expect(transform.take(1)).toEqual([1])
+    expect(transform.take(0)).toEqual([])
+  })
+
+  it('can be reduced to a promise', async () => {
+    const generateData = x => x + 1
+
+    const insertToDb = data => {
+      const result = `Inserted ${data}`
+      return Promise.resolve(result)
+    }
+
+    const transform = LazySeq()
+      .map(generateData)
+      .map(insertToDb)
+
+    const fireAndForget = await transform
+      .reduce(
+        (chain, p) => chain.then(() => p),
+        Promise.resolve()
+      )
+      .take(2)
+
+    expect(fireAndForget).toEqual('Inserted 2')
+
+    const trackEverything = await transform
+      .reduce(
+        (chain, p) => chain.then(results =>
+          p.then(r => results.concat(r))),
+        Promise.resolve([])
+      )
+      .take(2)
+
+    expect(trackEverything).toEqual([
+      'Inserted 1',
+      'Inserted 2'
+    ])
+  })
 })

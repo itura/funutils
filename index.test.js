@@ -49,14 +49,13 @@ describe('funutils', () => {
   })
 
   test('LazySeqM', () => {
-    const { Nothing } = require('./maybe')
     const data = () => [1, 2, 3].values()
     const seq = funutils.LazySeqM(funutils.monads.Maybe, data)
       .map(x => x + 1)
       .map(x => x % 2 === 1 ? x : null)
       .map(x => x.toString())
 
-    expect(seq.take(3)).toEqual([Nothing, '3', Nothing])
+    expect(seq.take(3)).toEqual(['3'])
   })
 
   test('monads', () => {

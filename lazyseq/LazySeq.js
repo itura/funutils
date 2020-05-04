@@ -1,15 +1,20 @@
+const { lazyReduce, integers } = require('./common')
 
-const LazySeq = (startSequence, monad) => {
-  const fns = []
+const LazySeq = (generator = integers) => {
+  const fs = []
 
-  const map = function (fn) {
-    fns.push(fn)
+  const map = function (f) {
+    fs.push(f)
     return this
   }
 
   const nil = Symbol('nil')
-  const filter = function (fn) {
-    fns.push(x => fn(x) ? x : nil)
+  const nilCaseMap = (x, cases) =>
+    x === nil
+      ? cases.nil
+      : cases.just(x)
+  const filter = function (f) {
+    fs.push(x => f(x) ? x : nil)
     return this
   }
 
@@ -23,30 +28,22 @@ const LazySeq = (startSequence, monad) => {
     return this
   }
 
-  const take = n => {
-    const iterator = startSequence()
+  const [reduce, take] = lazyReduce(generator, fs, {
+    result: (fs, next) => fs.reduce(
+      (prev, f) => nilCaseMap(prev, {
+        nil: nil,
+        just: x => f(x)
+      }),
+      next
+    ),
+    results: (acc, result) => nilCaseMap(result, {
+      nil: acc,
+      just: x => acc.concat(x)
+    })
+  })
 
-    const results = []
-    for (let i = 0; i < n; i++) {
-      const next = iterator.next()
-      if (next.done) {
-        break
-      }
-
-      const result = fns.reduce(
-        (prev, fn) => prev === nil ? nil : fn(prev),
-        next.value
-      )
-
-      if (result !== nil) {
-        results.push(result)
-      }
-    }
-
-    return results
-  }
   return {
-    map, filter, compact, take
+    map, filter, compact, reduce, take
   }
 }
 
