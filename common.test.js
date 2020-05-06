@@ -91,8 +91,8 @@ test('common', () => {
   expect(randomInt(1)).toEqual(0)
   expect(randomInt(1, 1)).toEqual(1)
 
-  repeat(50, () => expect(randomInt(5) < 5).toEqual(true))
-  repeat(50, () => expect(randomInt(5, 1) < 6).toEqual(true))
+  repeat(50, () => expect(randomInt(5)).toBeLessThan(5))
+  repeat(50, () => expect(randomInt(5, 1)).toBeLessThan(6))
 
   expect(repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 })

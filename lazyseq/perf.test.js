@@ -80,9 +80,9 @@ describe('LazySeqM promise reducer performance', () => {
     console.log('collectAllQuick', d2.toFixed(0), 'ms')
     console.log('===========')
 
-    expect(d0 < 100).toEqual(true)
-    expect(d1 < 3500).toEqual(true)
-    expect(d2 < 100).toEqual(true)
+    expect(d0).toBeLessThan(100)
+    expect(d1).toBeLessThan(3600)
+    expect(d2).toBeLessThan(100)
   })
 })
 
@@ -153,8 +153,8 @@ describe('LazySeq promise reducer performance', () => {
     console.log('collectAllQuick', d2.toFixed(0), 'ms')
     console.log('===========')
 
-    expect(d0 < 50).toEqual(true)
-    expect(d1 < 3500).toEqual(true)
-    expect(d2 < 50).toEqual(true)
+    expect(d0).toBeLessThan(50)
+    expect(d1).toBeLessThan(3600)
+    expect(d2).toBeLessThan(50)
   })
 })

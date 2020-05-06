@@ -19,6 +19,14 @@ describe('funutils', () => {
       )
     ).toEqual(3)
 
+    expect(funutils.zip([1, 2], ['a', 'b'])).toEqual(
+      [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
+    )
+
+    expect(funutils.randomInt(5)).toBeLessThan(5)
+
+    expect(funutils.repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
+
     return funutils.chainP(
       Promise.resolve(1),
       x => Promise.resolve(x + 2),
@@ -46,6 +54,11 @@ describe('funutils', () => {
       .filter(x => x % 2 === 1)
 
     expect(seq.take(3)).toEqual([3])
+
+    const seq1 = seq
+      .reduce((sum, x) => sum + x, 1)
+
+    expect(seq1.take(3)).toEqual(4)
   })
 
   test('LazySeqM', () => {
@@ -56,6 +69,11 @@ describe('funutils', () => {
       .map(x => x.toString())
 
     expect(seq.take(3)).toEqual(['3'])
+
+    const seq1 = seq
+      .reduce((acc, x) => `${acc} ${x}`, 'hi')
+
+    expect(seq1.take(3)).toEqual('hi 3')
   })
 
   test('monads', () => {

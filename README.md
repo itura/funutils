@@ -13,4 +13,5 @@ See tests
 npm install
 npm test
 rpm run lint
+npm run perf
 ```
