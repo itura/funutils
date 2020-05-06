@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { chain, map, filter, compact, flatten, reduce } = require('./common')
+const { chain, map, filter, compact, flatten, reduce, zip, randomInt, repeat } = require('./common')
 
 test('common', () => {
   expect(
@@ -68,4 +68,31 @@ test('common', () => {
   ).toEqual(
     3
   )
+
+  const one = [1, 2]
+  const two = ['a', 'b']
+  const three = [['!', '?']]
+
+  expect(zip(one, two)).toEqual(
+    [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
+  )
+
+  expect(zip(one, three)).toEqual(
+    [[1, ['!', '?']], [2, ['!', '?']]]
+  )
+
+  expect(zip(one, two, three)).toEqual([
+    [[1, 'a'], ['!', '?']],
+    [[1, 'b'], ['!', '?']],
+    [[2, 'a'], ['!', '?']],
+    [[2, 'b'], ['!', '?']]
+  ])
+
+  expect(randomInt(1)).toEqual(0)
+  expect(randomInt(1, 1)).toEqual(1)
+
+  repeat(50, () => expect(randomInt(5) < 5).toEqual(true))
+  repeat(50, () => expect(randomInt(5, 1) < 6).toEqual(true))
+
+  expect(repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 })

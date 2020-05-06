@@ -22,6 +22,18 @@ const tap = f => x => {
   return x
 }
 
+const zip = (...xs) => {
+  return xs.reduce(
+    (as, bs) => as.map(a => bs.map(b => [a, b])).flat()
+  )
+}
+
+const randomInt = (range, min = 0) =>
+  Math.floor(Math.random() * Math.floor(range)) + min
+
+const repeat = (count, fn) =>
+  [...Array(count)].map((_, i) => fn(i))
+
 module.exports = {
   chain,
   chainP,
@@ -32,5 +44,8 @@ module.exports = {
   reduce,
   compose,
   id,
-  tap
+  tap,
+  zip,
+  randomInt,
+  repeat
 }

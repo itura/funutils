@@ -75,7 +75,7 @@ describe('LazySeq', () => {
 
   it('defaults to increasing integers starting at 0 as the generator', () => {
     const transform = LazySeq()
-      .map(i => [i + 1])
+      .map(i => i + 1)
 
     expect(transform.take(4)).toEqual([1, 2, 3, 4])
     expect(transform.take(3)).toEqual([1, 2, 3])
