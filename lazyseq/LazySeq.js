@@ -1,4 +1,5 @@
-const { lazyReduce, integers } = require('./common')
+const { lazyReduce } = require('./common')
+const { integers } = require('../generators')
 
 const nil = Symbol('nil')
 const nilCaseMap = (x, cases) =>

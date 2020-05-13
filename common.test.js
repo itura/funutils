@@ -71,21 +71,23 @@ test('common', () => {
 
   const one = [1, 2]
   const two = ['a', 'b']
-  const three = [['!', '?']]
+  const three = [3, 4]
 
-  expect(zip(one, two)).toEqual(
-    [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
-  )
+  expect(zip(one)).toEqual([
+    [1, 2]
+  ])
 
-  expect(zip(one, three)).toEqual(
-    [[1, ['!', '?']], [2, ['!', '?']]]
-  )
+  expect(zip(one, two)).toEqual([
+    [1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']
+  ])
+
+  expect(zip(one, three)).toEqual([
+    [1, 3], [1, 4], [2, 3], [2, 4]
+  ])
 
   expect(zip(one, two, three)).toEqual([
-    [[1, 'a'], ['!', '?']],
-    [[1, 'b'], ['!', '?']],
-    [[2, 'a'], ['!', '?']],
-    [[2, 'b'], ['!', '?']]
+    [1, 'a', 3], [1, 'a', 4], [1, 'b', 3], [1, 'b', 4],
+    [2, 'a', 3], [2, 'a', 4], [2, 'b', 3], [2, 'b', 4]
   ])
 
   expect(randomInt(1)).toEqual(0)

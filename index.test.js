@@ -103,9 +103,40 @@ describe('funutils', () => {
       monads.chainM(monads.Something)([id])(1)
     ).toEqual(1)
 
-    const m = monads.composeM(monads.FlatSequence)(monads.Maybe)
+    const m1 = monads.composeM(monads.FlatSequence)(monads.Maybe)
+    const m2 = monads.Something
+    const data = [[1, 2], null, [4], 5]
+
     expect(
-      monads.chainM(m)([id])([[1, 2], null, [4], 5])
+      monads.applyM(m1)(id)(data)
     ).toEqual([1, 2, funutils.Maybe.Nothing, 4, 5])
+
+    expect(
+      monads.applyM(m2)(id)(data)
+    ).toEqual([1, 2, 4, 5])
+  })
+
+  test('generators', () => {
+    const i1 = funutils.generators.integers()
+    expect(
+      funutils.repeat(5, () => i1.next())
+    ).toEqual([
+      { value: 0, done: false },
+      { value: 1, done: false },
+      { value: 2, done: false },
+      { value: 3, done: false },
+      { value: 4, done: false }
+    ])
+
+    const i2 = funutils.generators.zip([1, 2], ['a', 'b'])
+    expect(
+      funutils.repeat(5, () => i2.next())
+    ).toEqual([
+      { value: [1, 'a'], done: false },
+      { value: [1, 'b'], done: false },
+      { value: [2, 'a'], done: false },
+      { value: [2, 'b'], done: false },
+      { value: undefined, done: true }
+    ])
   })
 })

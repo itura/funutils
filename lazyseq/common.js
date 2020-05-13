@@ -1,12 +1,4 @@
 
-const integers = function * () {
-  let i = 0
-  while (true) {
-    yield i
-    i++
-  }
-}
-
 const lazyReduce = (generator, fs, { result, results }) => {
   let acc
   let _initial = () => []
@@ -41,4 +33,4 @@ const lazyReduce = (generator, fs, { result, results }) => {
   return [reduce, take]
 }
 
-module.exports = { lazyReduce, integers }
+module.exports = { lazyReduce }

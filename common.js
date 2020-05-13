@@ -22,10 +22,19 @@ const tap = f => x => {
   return x
 }
 
-const zip = (...xs) => {
-  return xs.reduce(
-    (as, bs) => as.map(a => bs.map(b => [a, b])).flat()
-  )
+const _zip = (combo, ...xss) => {
+  if (xss.length === 1) {
+    return xss[0].flat().map(x => combo.concat(x))
+  } else {
+    const head = xss[0]
+    const tail = xss.slice(1)
+    return head.map(h => _zip(combo.concat(h), ...tail)).flat()
+  }
+}
+
+const zip = (...xss) => {
+  if (xss.length < 2) return xss
+  return _zip([], ...xss)
 }
 
 const randomInt = (range, min = 0) =>
