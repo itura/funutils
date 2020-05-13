@@ -1,12 +1,9 @@
 const monads = require('../monads')
 const { lazyReduce, integers } = require('./common')
 
-const LazySeqM = (monad, generator = integers) => {
-  const fs = []
-
+const LazySeqM = (monad, generator = integers, fs = []) => {
   const map = function (f) {
-    fs.push(f)
-    return this
+    return LazySeqM(monad, generator, fs.concat(f))
   }
 
   const [reduce, take] = lazyReduce(generator, fs, {

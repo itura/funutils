@@ -1,31 +1,27 @@
 const { lazyReduce, integers } = require('./common')
 
-const LazySeq = (generator = integers) => {
-  const fs = []
+const nil = Symbol('nil')
+const nilCaseMap = (x, cases) =>
+  x === nil
+    ? cases.nil
+    : cases.just(x)
 
+const LazySeq = (generator = integers, fs = []) => {
   const map = function (f) {
-    fs.push(f)
-    return this
+    return LazySeq(generator, fs.concat(f))
   }
 
-  const nil = Symbol('nil')
-  const nilCaseMap = (x, cases) =>
-    x === nil
-      ? cases.nil
-      : cases.just(x)
   const filter = function (f) {
-    fs.push(x => f(x) ? x : nil)
-    return this
+    return LazySeq(generator, fs.concat(x => f(x) ? x : nil))
   }
 
   const compact = function () {
-    filter(x => {
+    return filter(x => {
       const emptyArray = !x || x.length === 0
       const zero = x === 0
 
       return !emptyArray || zero
     })
-    return this
   }
 
   const [reduce, take] = lazyReduce(generator, fs, {

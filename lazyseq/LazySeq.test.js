@@ -118,4 +118,21 @@ describe('LazySeq', () => {
       'Inserted 2'
     ])
   })
+
+  it('is immutable', () => {
+    const s1 = LazySeq()
+    const s2 = s1.map(x => x + 1)
+    const s3 = s2.map(x => x % 2 === 0 ? x : null)
+    const s4 = s3.compact()
+
+    expect(s1.take(3)).toEqual([0, 1, 2])
+    expect(s2.take(3)).toEqual([1, 2, 3])
+    expect(s3.take(3)).toEqual([null, 2, null])
+    expect(s4.take(3)).toEqual([2])
+
+    expect(s1.take(3)).toEqual([0, 1, 2])
+    expect(s2.take(3)).toEqual([1, 2, 3])
+    expect(s3.take(3)).toEqual([null, 2, null])
+    expect(s4.take(3)).toEqual([2])
+  })
 })
