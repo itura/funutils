@@ -9,7 +9,7 @@ const chain = (...fs) =>
 
 const chainP = (...fs) =>
   fs.reduce(
-    (chain, f) => chain.then(x => f(x))
+    (chain, f) => chain.then(f)
   )
 
 const map = f => array => array.map(f)

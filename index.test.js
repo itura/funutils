@@ -139,4 +139,24 @@ describe('funutils', () => {
       { value: undefined, done: true }
     ])
   })
+
+  test('UserJourney', async done => {
+    const page = {
+      getElement: jest.fn().mockReturnValue(true)
+    }
+
+    await funutils.UserJourney(page, done.fail)
+      .given('something works', async page => {
+        expect(page.getElement('a')).toEqual(true)
+      })
+      .then('this other thing should too', async page => {
+        expect(page.getElement('b')).toEqual(true)
+      })
+      .run()
+
+    expect(page.getElement).toHaveBeenCalledTimes(2)
+    expect(page.getElement).toHaveBeenNthCalledWith(1, 'a')
+    expect(page.getElement).toHaveBeenNthCalledWith(2, 'b')
+    done()
+  })
 })

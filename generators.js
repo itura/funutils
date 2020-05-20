@@ -31,12 +31,8 @@ const integers = function * (options = {}) {
   if (step < 0) return
 
   let i = start
-  while (true) {
-    if (i < stop) {
-      yield i
-    } else {
-      return
-    }
+  while (i < stop) {
+    yield i
     i += step
   }
 }
