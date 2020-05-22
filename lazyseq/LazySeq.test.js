@@ -89,11 +89,19 @@ describe('LazySeq', () => {
   })
 
   it('can be reduced after a filter', () => {
+    let length = 0
     const transform = LazySeq()
       .filter(x => x % 2 === 0)
-      .reduce((acc, x) => `${acc}${x}`, '')
+      .reduce(
+        (acc, x) => {
+          length++
+          return `${acc}${x}`
+        },
+        ''
+      )
 
     expect(transform.take(5)).toEqual('024')
+    expect(length).toEqual(3)
   })
 
   it('can be reduced to a promise', async () => {
@@ -146,9 +154,9 @@ describe('LazySeq', () => {
     expect(s5.take(3)).toEqual(2)
     expect(s6.take(3)).toEqual(-2)
 
-    expect(s1.take(3)).toEqual([0, 1, 2])
-    expect(s2.take(3)).toEqual([1, 2, 3])
-    expect(s3.take(3)).toEqual([null, 2, null])
     expect(s4.take(3)).toEqual([2])
+    expect(s3.take(3)).toEqual([null, 2, null])
+    expect(s2.take(3)).toEqual([1, 2, 3])
+    expect(s1.take(3)).toEqual([0, 1, 2])
   })
 })

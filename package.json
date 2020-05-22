@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --watchAll --testPathIgnorePatterns='perf\\.test'",
-    "perf": "jest --testPathPattern='perf\\.test'",
+    "perf": "jest --testPathPattern='perf\\.test' --runInBand",
     "lint": "standard --fix"
   },
   "jest": {

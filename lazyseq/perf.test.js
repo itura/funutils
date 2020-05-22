@@ -13,148 +13,200 @@ const time = async (action) => {
   return [result, durationMs]
 }
 
-describe('LazySeqM promise reducer performance', () => {
-  const count = 10000
+const verbose = false
 
-  const generateData = x => [x + 1, x + 2]
+const perfTest = (title, expectedDuration, action, check, t = test) => {
+  t(`${title} < ${expectedDuration} ms`, async () => {
+    const [results, duration] = await time(action)
 
-  let inserted = 0
-  const insertToDb = data => {
-    const result = `Inserted ${data}`
-    inserted++
-    return Promise.resolve(result)
-  }
+    if (verbose) {
+      console.log(`${title}: `, duration.toFixed(0), 'ms')
+    }
 
-  const transform = LazySeqM(monads.FlatSequence)
-    .map(generateData)
-    .map(insertToDb)
-
-  test(`collecting all vs fire and forget @ ${count}`, async () => {
-    const [fireAndForget, d0] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) => chain.then(() => next),
-          Promise.resolve()
-        )
-        .take(count)
-    )
-
-    expect(fireAndForget).toEqual(`Inserted ${count + 1}`)
-    expect(inserted).toEqual(count * 2)
-
-    const [collectAll, d1] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) =>
-            chain.then(results =>
-              next.then(r => results.concat(r))
-            ),
-          Promise.resolve([])
-        )
-        .take(count)
-    )
-
-    expect(collectAll.length).toEqual(count * 2)
-    expect(inserted).toEqual(count * 4)
-
-    const [collectAllQuick, d2] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) =>
-            chain.then(results =>
-              next.then(r => {
-                results.push(r) // it's fast bc we mutate the acc
-                return results
-              })
-            ),
-          Promise.resolve([])
-        )
-        .take(count)
-    )
-
-    expect(collectAllQuick.length).toEqual(count * 2)
-    expect(inserted).toEqual(count * 6)
-
-    console.log('fireAndForget', d0.toFixed(0), 'ms')
-    console.log('collectAll', d1.toFixed(0), 'ms')
-    console.log('collectAllQuick', d2.toFixed(0), 'ms')
-    console.log('===========')
-
-    expect(d0).toBeLessThan(100)
-    expect(d1).toBeLessThan(3600)
-    expect(d2).toBeLessThan(100)
+    expect(duration).toBeLessThan(expectedDuration)
+    check(results)
   })
-})
+}
 
-describe('LazySeq promise reducer performance', () => {
+describe('LazySeq(M) promise reducer performance', () => {
   const count = 20000
 
-  const generateData = x => x + 1
-
-  let inserted = 0
+  let inserted
   const insertToDb = data => {
     const result = `Inserted ${data}`
     inserted++
     return Promise.resolve(result)
   }
 
-  const transform = LazySeq()
-    .map(generateData)
-    .map(insertToDb)
+  beforeEach(() => {
+    inserted = 0
+  })
 
-  test(`collecting all vs fire and forget @ ${count}`, async () => {
-    const [fireAndForget, d0] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) => chain.then(() => next),
-          Promise.resolve()
-        )
+  const fireAndForget =
+    (chain, next) =>
+      chain.then(() => next)
+
+  const collectAll =
+    (chain, next) =>
+      chain.then(results =>
+        next.then(r => results.concat(r))
+      )
+
+  const collectAllFast =
+    (chain, next) =>
+      chain.then(results =>
+        next.then(r => {
+          results.push(r) // it's fast bc we mutate the acc
+          return results
+        })
+      )
+
+  describe('LazySeq', () => {
+    perfTest('LazySeq: fireAndForget normal reduce', 2100,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
         .take(count)
+        .reduce(fireAndForget, Promise.resolve()),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results).toEqual(`Inserted ${count}`)
+      }
     )
 
-    expect(fireAndForget).toEqual(`Inserted ${count}`)
-    expect(inserted).toEqual(count)
-
-    const [collectAll, d1] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) =>
-            chain.then(results =>
-              next.then(r => results.concat(r))
-            ),
-          Promise.resolve([])
-        )
-        .take(count)
+    perfTest('LazySeq: fireAndForget lazy reduce', 60,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
+        .reduce(fireAndForget, Promise.resolve())
+        .take(count),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results).toEqual(`Inserted ${count}`)
+      }
     )
 
-    expect(collectAll.length).toEqual(count)
-    expect(inserted).toEqual(count * 2)
-
-    const [collectAllQuick, d2] = await time(() =>
-      transform
-        .reduce(
-          (chain, next) =>
-            chain.then(results =>
-              next.then(r => {
-                results.push(r) // it's fast bc we mutate the acc
-                return results
-              })
-            ),
-          Promise.resolve([])
-        )
+    perfTest('LazySeq: collectAll normal reduce', 5700,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
         .take(count)
+        .reduce(collectAll, Promise.resolve([])),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count}`)
+      }
     )
 
-    expect(collectAllQuick.length).toEqual(count)
-    expect(inserted).toEqual(count * 3)
+    perfTest('LazySeq: collectAll lazy reduce',
+      3600,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
+        .reduce(collectAll, Promise.resolve([]))
+        .take(count),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count}`)
+      }
+    )
 
-    console.log('fireAndForget', d0.toFixed(0), 'ms')
-    console.log('collectAll', d1.toFixed(0), 'ms')
-    console.log('collectAllQuick', d2.toFixed(0), 'ms')
-    console.log('===========')
+    perfTest('LazySeq: collectAllFast normal reduce', 2400,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
+        .take(count)
+        .reduce(collectAllFast, Promise.resolve([])),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count}`)
+      }
+    )
 
-    expect(d0).toBeLessThan(50)
-    expect(d1).toBeLessThan(3600)
-    expect(d2).toBeLessThan(50)
+    perfTest('LazySeq: collectAllFast lazy reduce', 100,
+      () => LazySeq()
+        .map(x => x + 1)
+        .map(insertToDb)
+        .reduce(collectAllFast, Promise.resolve([]))
+        .take(count),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count}`)
+      }
+    )
+  })
+
+  describe('LazySeqM', () => {
+    perfTest('LazySeqM: fireAndForget normal reduce', 2500,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .take(count / 2)
+        .reduce(fireAndForget, Promise.resolve()),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
+
+    perfTest('LazySeqM: fireAndForget lazy reduce', 100,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .reduce(fireAndForget, Promise.resolve())
+        .take(count / 2),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
+
+    perfTest('LazySeqM: collectAll normal reduce', 6000,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .take(count / 2)
+        .reduce(collectAll, Promise.resolve([])),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
+
+    perfTest('LazySeqM: collectAll lazy reduce', 3700,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .reduce(collectAll, Promise.resolve([]))
+        .take(count / 2),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
+
+    perfTest('LazySeqM: collectAllFast normal reduce', 2500,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .take(count / 2)
+        .reduce(collectAllFast, Promise.resolve([])),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
+
+    perfTest('LazySeqM: collectAllFast lazy reduce', 100,
+      () => LazySeqM(monads.FlatSequence)
+        .map(x => [x + 1, x + 2])
+        .map(insertToDb)
+        .reduce(collectAllFast, Promise.resolve([]))
+        .take(count / 2),
+      results => {
+        expect(inserted).toEqual(count)
+        expect(results[count - 1]).toEqual(`Inserted ${count / 2 + 1}`)
+      }
+    )
   })
 })
