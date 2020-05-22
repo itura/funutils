@@ -70,6 +70,10 @@ describe('LazySeq', () => {
       const compact = LazySeq(falseyData).compact()
 
       expect(compact.take(8)).toEqual([0, 1, 2])
+      expect(compact.take(7)).toEqual([0, 1])
+      expect(compact.take(6)).toEqual([0])
+      expect(compact.take(5)).toEqual([])
+      expect(compact.take(0)).toEqual([])
     })
   })
 
@@ -82,6 +86,14 @@ describe('LazySeq', () => {
     expect(transform.take(2)).toEqual([1, 2])
     expect(transform.take(1)).toEqual([1])
     expect(transform.take(0)).toEqual([])
+  })
+
+  it('can be reduced after a filter', () => {
+    const transform = LazySeq()
+      .filter(x => x % 2 === 0)
+      .reduce((acc, x) => `${acc}${x}`, '')
+
+    expect(transform.take(5)).toEqual('024')
   })
 
   it('can be reduced to a promise', async () => {
@@ -124,11 +136,15 @@ describe('LazySeq', () => {
     const s2 = s1.map(x => x + 1)
     const s3 = s2.map(x => x % 2 === 0 ? x : null)
     const s4 = s3.compact()
+    const s5 = s4.reduce((acc, x) => acc + x, 0)
+    const s6 = s5.reduce((acc, x) => acc - x, 0)
 
     expect(s1.take(3)).toEqual([0, 1, 2])
     expect(s2.take(3)).toEqual([1, 2, 3])
     expect(s3.take(3)).toEqual([null, 2, null])
     expect(s4.take(3)).toEqual([2])
+    expect(s5.take(3)).toEqual(2)
+    expect(s6.take(3)).toEqual(-2)
 
     expect(s1.take(3)).toEqual([0, 1, 2])
     expect(s2.take(3)).toEqual([1, 2, 3])

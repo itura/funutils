@@ -1,23 +1,15 @@
 
-const lazyReduce = (generator, fs, { result, results }) => {
+const lazyReduce = ({ generator, fs, result, reducer, initial }) => {
   let acc
-  let _initial = () => []
-  let _reduce = x => {
-    acc = results(acc, x)
-  }
-  const reduce = function (f, initial) {
-    _initial = () => initial
-    _reduce = x => {
-      acc = f(acc, x)
-    }
-    return this
+  const _reduce = x => {
+    acc = reducer(acc, x)
   }
 
   const take = n => {
     const iterator = generator()
     const _fs = fs.concat(_reduce)
-    acc = _initial()
 
+    acc = initial()
     for (let i = 0; i < n; i++) {
       const next = iterator.next()
       if (next.done) {
@@ -30,7 +22,7 @@ const lazyReduce = (generator, fs, { result, results }) => {
     return acc
   }
 
-  return [reduce, take]
+  return take
 }
 
 module.exports = { lazyReduce }
