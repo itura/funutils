@@ -20,7 +20,7 @@ const LazySeq = (generator = integers, config = {}) => {
   const reducer = config.reducer || defaultReducer
   const fs = config.fs || []
 
-  const map = (f) => {
+  const map = f => {
     return LazySeq(generator, {
       ...config,
       fs: fs.concat(f)
