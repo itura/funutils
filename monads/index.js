@@ -3,11 +3,11 @@ const { Nothing } = require('../maybe')
 const SequenceMonad = require('./sequence')
 const { compose, id, filter } = require('../common')
 
-const applyM = M => f => compose(M.bind(f), M.unit)
+const applyM = M => f => compose(M.bind(f))(M.unit)
 
 const composeM = M1 => M2 => {
   return {
-    bind: compose(M1.bind, applyM(M2)),
+    bind: compose(M1.bind)(applyM(M2)),
     unit: M1.unit
   }
 }

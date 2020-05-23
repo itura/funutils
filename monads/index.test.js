@@ -42,7 +42,7 @@ describe('Maybe', () => {
     const unit = monads.Maybe.unit
     const bind = monads.Maybe.bind
     const f = id
-    const lhs = compose(bind(f), unit)
+    const lhs = compose(bind(f))(unit)
     const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
@@ -65,8 +65,8 @@ describe('Maybe', () => {
     const bind = monads.Maybe.bind
     const f = x => Just(x + 1)
     const g = x => Just(x + 2)
-    const lhs = compose(bind(g), bind(f))
-    const rhs = bind(compose(bind(g), f))
+    const lhs = compose(bind(g))(bind(f))
+    const rhs = bind(compose(bind(g))(f))
 
     expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
     expect(lhs(Maybe(null))).toEqual(rhs(Nothing)) // ?
@@ -135,7 +135,7 @@ describe('FlatSequence', () => {
     const unit = monads.FlatSequence.unit
     const bind = monads.FlatSequence.bind
     const f = id
-    const lhs = compose(bind(f), unit)
+    const lhs = compose(bind(f))(unit)
     const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
@@ -162,8 +162,8 @@ describe('FlatSequence', () => {
     const bind = monads.FlatSequence.bind
     const f = x => [x + 1, x + 2]
     const g = x => [x + 3]
-    const lhs = compose(bind(g), bind(f))
-    const rhs = bind(compose(bind(g), f))
+    const lhs = compose(bind(g))(bind(f))
+    const rhs = bind(compose(bind(g))(f))
 
     expect(lhs([])).toEqual(rhs([]))
     expect(lhs([1])).toEqual(rhs([1]))
@@ -257,7 +257,7 @@ describe('SomethingMonad', () => {
     const unit = monads.Something.unit
     const bind = monads.Something.bind
     const f = id
-    const lhs = compose(bind(f), unit)
+    const lhs = compose(bind(f))(unit)
     const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
@@ -283,8 +283,8 @@ describe('SomethingMonad', () => {
     const bind = monads.Something.bind
     const f = x => [x + 1, x + 2]
     const g = x => [x + 3]
-    const lhs = compose(bind(g), bind(f))
-    const rhs = bind(compose(bind(g), f))
+    const lhs = compose(bind(g))(bind(f))
+    const rhs = bind(compose(bind(g))(f))
 
     expect(lhs([])).toEqual(rhs([]))
     expect(lhs([1])).toEqual(rhs([1]))
@@ -379,7 +379,7 @@ describe('FlatSequence . Maybe', () => {
     const unit = monad.unit
     const bind = monad.bind
     const f = id
-    const lhs = compose(bind(f), unit)
+    const lhs = compose(bind(f))(unit)
     const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
@@ -405,8 +405,8 @@ describe('FlatSequence . Maybe', () => {
     const bind = monad.bind
     const f = x => [x + 1, x + 2]
     const g = x => [x + 3]
-    const lhs = compose(bind(g), bind(f))
-    const rhs = bind(compose(bind(g), f))
+    const lhs = compose(bind(g))(bind(f))
+    const rhs = bind(compose(bind(g))(f))
 
     expect(lhs([])).toEqual(rhs([]))
     expect(lhs([1])).toEqual(rhs([1]))

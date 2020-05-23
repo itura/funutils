@@ -24,9 +24,9 @@ describe('Maybe', () => {
     const g = x => x - 9
     const f = x => x * 2
 
-    expect(just.map(compose(f, g)))
+    expect(just.map(compose(f)(g)))
       .toStrictEqual(just.map(g).map(f))
-    expect(nothing.map(compose(f, g)))
+    expect(nothing.map(compose(f)(g)))
       .toStrictEqual(nothing.map(g).map(f))
   })
 })

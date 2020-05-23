@@ -4,12 +4,14 @@ const color = (code, fill = false, bold = false) => value =>
   `\u{1b}[${bold ? '1;' : ''}${fill ? '48' : '38'};5;${code}m${value}\u{1b}[0m`
 
 const bold = color('0', false, true)
+const red = color('160')
 const redBg = color('160', true)
+const green = color('34')
 const greenBg = color('34', true)
 const secondary = color('247')
 const white = color('231')
-const boldWhite = compose(bold, white)
-const running = compose(boldWhite, color('3', true))(' RUNNING ')
+const boldWhite = compose(bold)(white)
+const running = compose(boldWhite)(color('3', true))(' RUNNING ')
 const status = passed => boldWhite(passed ? greenBg(' PASS ') : redBg(' FAIL '))
 const clearLine = '\u{1b}[1K\r'
 
@@ -21,11 +23,11 @@ PerfTestReporter.prototype = {
   },
 
   onTestResult: function (runConfig, fileResults, runResults) {
-    const totalDuration = (fileResults.perfStats.end - fileResults.perfStats.start) / 1000
+    const totalDuration = fileResults.perfStats.end - fileResults.perfStats.start
     const passed = fileResults.numFailingTests === 0
 
     process.stdout.write(clearLine)
-    console.log(`${status(passed)} Performance Report (${totalDuration.toFixed(0)} s)`)
+    console.log(`${status(passed)} Performance Report (${totalDuration.toFixed(0)} ms)`)
 
     chain(
       fileResults.testResults,
@@ -55,16 +57,16 @@ PerfTestReporter.prototype = {
       results => Object.entries(results),
 
       map(([description, results]) => {
-        const passed = results.filter(r => !r.passed).length === 0
+        const passed = results.filter(r => !r.passed && !r.pending).length === 0
 
         return [`  ${status(passed)} ${description}`, ...results.map(r => {
           const _title = r.title.split('#')
           const actualDuration = `${r.duration}`.padEnd(5)
           const expectedDuration = _title[0].padEnd(5)
           const durationText = `${actualDuration} < ${expectedDuration} `
-          const icon = r.passed ? '🟢' : r.pending ? '🟡' : '🔴'
+          const icon = r.passed ? green('☑︎') : r.pending ? '◻︎' : red('☒')
           const errors = r.passed || r.pending ? '' : `\n${r.errors.join('\n')}\n`
-          return secondary(`    ${icon} ${durationText}${_title[1]}`) + errors
+          return `    ${icon} ${secondary(`${durationText}${_title[1]}`)} ${errors}`
         })]
       }),
 
@@ -72,6 +74,8 @@ PerfTestReporter.prototype = {
 
       tap(lines => lines.forEach(line => console.log(line)))
     )
+
+    console.log()
   }
 
 }
