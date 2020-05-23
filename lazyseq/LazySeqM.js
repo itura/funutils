@@ -11,14 +11,14 @@ const LazySeqM = (monad, generator = integers, config = {}) => {
   const reducer = config.reducer || defaultReducer
   const initial = config.initial || defaultInitial
 
-  const map = function (f) {
+  const map = f => {
     return LazySeqM(monad, generator, {
       ...config,
       fs: fs.concat(f)
     })
   }
 
-  const reduce = function (reducer, initial) {
+  const reduce = (reducer, initial) => {
     return LazySeqM(monad, generator, {
       ...config,
       reducer,

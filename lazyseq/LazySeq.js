@@ -20,21 +20,21 @@ const LazySeq = (generator = integers, config = {}) => {
   const reducer = config.reducer || defaultReducer
   const fs = config.fs || []
 
-  const map = function (f) {
+  const map = (f) => {
     return LazySeq(generator, {
       ...config,
       fs: fs.concat(f)
     })
   }
 
-  const filter = function (f) {
+  const filter = (f) => {
     return LazySeq(generator, {
       ...config,
       fs: fs.concat(x => f(x) ? x : nil)
     })
   }
 
-  const compact = function () {
+  const compact = () => {
     return filter(x => {
       const emptyArray = !x || x.length === 0
       const zero = x === 0
@@ -43,7 +43,7 @@ const LazySeq = (generator = integers, config = {}) => {
     })
   }
 
-  const reduce = function (reducer, initial) {
+  const reduce = (reducer, initial) => {
     return LazySeq(generator, {
       ...config,
       reducer,
