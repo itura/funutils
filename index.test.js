@@ -159,4 +159,18 @@ describe('funutils', () => {
     expect(page.getElement).toHaveBeenNthCalledWith(2, 'b')
     done()
   })
+
+  test('colors', () => {
+    const { color, purple, purpleBg, styles, blend } = funutils.colors
+    const [someColor, someColorBg] = color(248)
+    // styles have to go last
+    const boldPurple = blend(purple, styles.bold)
+    const custom = blend(purpleBg, someColor, styles.bold)
+
+    console.log(
+      styles.underline(purple(someColorBg('fun ')))
+      + custom(' utils ')
+      + boldPurple(' sure is fun!')
+    )
+  })
 })
