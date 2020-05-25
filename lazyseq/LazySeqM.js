@@ -31,7 +31,7 @@ const LazySeqM = (monad, generator = integers, config = {}) => {
     fs,
     reducer,
     initial,
-    result: (fs, next) => monads.chainM(monad)(fs)(next)
+    result: (fs, next) => monads.chainM(monad)(...fs)(next)
   })
 
   return {

@@ -128,7 +128,7 @@ describe('funutils', () => {
     ).toEqual(1)
 
     expect(
-      monads.chainM(monads.Something)([id])(1)
+      monads.chainM(monads.Something)(id, id)(1)
     ).toEqual(1)
 
     const m1 = monads.composeM(monads.FlatSequence)(monads.Maybe)
@@ -136,11 +136,11 @@ describe('funutils', () => {
     const data = [[1, 2], null, [4], 5]
 
     expect(
-      monads.applyM(m1)(id)(data)
+      monads.chainM(m1)(id)(data)
     ).toEqual([1, 2, funutils.Maybe.Nothing, 4, 5])
 
     expect(
-      monads.applyM(m2)(id)(data)
+      monads.chainM(m2)(id)(data)
     ).toEqual([1, 2, 4, 5])
   })
 
@@ -196,7 +196,7 @@ describe('funutils', () => {
     const custom = Colors(someColor, bold, bg(Purple))
 
     console.log(
-      Colors(fg(Purple), someColorBg, underline)('fun ') +
+      Colors(fg(Purple), someColorBg, underline)(' fun ') +
       custom(' utils ') +
       boldPurple(' sure is fun!')
     )

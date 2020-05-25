@@ -12,7 +12,7 @@ const composeM = M1 => M2 => {
   }
 }
 
-const chainM = M => fs => initial =>
+const chainM = M => (...fs) => initial =>
   fs.reduce(
     (prev, f) => applyM(M)(f)(prev),
     initial

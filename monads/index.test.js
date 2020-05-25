@@ -6,11 +6,7 @@ const { compose, id } = require('../common')
 
 describe('Maybe', () => {
   it('applies identity', () => {
-    const fs = [
-      x => x
-    ]
-
-    const result = monads.chainM(monads.Maybe)(fs)
+    const result = monads.applyM(monads.Maybe)(id)
 
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
@@ -22,12 +18,10 @@ describe('Maybe', () => {
   })
 
   it('safely chains functions', () => {
-    const fs = [
+    const result = monads.chainM(monads.Maybe)(
       x => x,
       x => x.toString()
-    ]
-
-    const result = monads.chainM(monads.Maybe)(fs)
+    )
 
     expect(result(0)).toEqual('0')
     expect(result([])).toEqual('')
@@ -78,7 +72,7 @@ describe('FlatSequence', () => {
   const chainM = monads.chainM(monads.FlatSequence)
 
   it('applies identity', () => {
-    const result = chainM([id])
+    const result = monads.applyM(monads.FlatSequence)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -92,19 +86,19 @@ describe('FlatSequence', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual('2!')
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result([])).toEqual([])
     expect(result([1])).toEqual(['2!'])
@@ -112,10 +106,10 @@ describe('FlatSequence', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM([
+    const result = chainM(
       x => [x, [x, x]],
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual(['1!', '1,1!'])
     expect(result([])).toEqual([])
@@ -124,9 +118,9 @@ describe('FlatSequence', () => {
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM([
+    const result = chainM(
       () => [1, [2, 3]]
-    ])
+    )
 
     expect(result()).toEqual([1, [2, 3]])
   })
@@ -174,9 +168,7 @@ describe('SomethingMonad', () => {
   const chainM = monads.chainM(monads.Something)
 
   it('applies identity', () => {
-    const result = chainM([
-      x => x
-    ])
+    const result = monads.applyM(monads.Something)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -188,36 +180,36 @@ describe('SomethingMonad', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual('2!')
   })
 
   it('returns Nothing instead of applying functions to Nothings from the input', () => {
-    const result = chainM([
+    const result = chainM(
       x => x.toString()
-    ])
+    )
 
     expect(result(null)).toEqual(Nothing)
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
-    const result = chainM([
+    const result = chainM(
       x => null,
       x => x.toString()
-    ])
+    )
 
     expect(result(1)).toEqual(Nothing)
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result([])).toEqual([])
     expect(result([1])).toEqual(['2!'])
@@ -225,10 +217,10 @@ describe('SomethingMonad', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM([
+    const result = chainM(
       x => [x, [x, x]],
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual(['1!', '1,1!'])
     expect(result([])).toEqual([])
@@ -237,18 +229,18 @@ describe('SomethingMonad', () => {
   })
 
   it('filters nested Nothings from the results of previous functions', () => {
-    const result = chainM([
+    const result = chainM(
       x => [null, 1, Nothing],
       x => x.toString()
-    ])
+    )
 
     expect(result(1)).toEqual(['1'])
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM([
+    const result = chainM(
       x => [x, [x, x], null]
-    ])
+    )
 
     expect(result(1)).toEqual([1, [1, 1], null])
   })
@@ -296,9 +288,7 @@ describe('FlatSequence . Maybe', () => {
   const chainM = monads.chainM(monad)
 
   it('applies identity', () => {
-    const result = chainM([
-      x => x
-    ])
+    const result = monads.applyM(monad)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -310,36 +300,36 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual('2!')
   })
 
   it('returns Nothing instead of applying functions to Nothings from the input', () => {
-    const result = chainM([
+    const result = chainM(
       x => x.toString()
-    ])
+    )
 
     expect(result(null)).toEqual(Nothing)
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
-    const result = chainM([
+    const result = chainM(
       x => null,
       x => x.toString()
-    ])
+    )
 
     expect(result(1)).toEqual(Nothing)
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM([
+    const result = chainM(
       x => x + 1,
       x => `${x}!`
-    ])
+    )
 
     expect(result([])).toEqual([])
     expect(result([1])).toEqual(['2!'])
@@ -347,10 +337,10 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM([
+    const result = chainM(
       x => [x, [x, x]],
       x => `${x}!`
-    ])
+    )
 
     expect(result(1)).toEqual(['1!', '1,1!'])
     expect(result([])).toEqual([])
@@ -359,18 +349,18 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('returns Nothing instead of applying functions to nested Nothings from previous functions', () => {
-    const result = chainM([
+    const result = chainM(
       x => [null, 1, Nothing],
       x => x.toString()
-    ])
+    )
 
     expect(result(1)).toEqual([Nothing, '1', Nothing])
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM([
+    const result = chainM(
       x => [x, [x, x], null]
-    ])
+    )
 
     expect(result(1)).toEqual([1, [1, 1], null])
   })
@@ -420,7 +410,7 @@ describe('FlatSequence . Maybe', () => {
       x => [`a - ${x}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = monads.chainM(monad)(fs)
+    const result = monads.chainM(monad)(...fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -439,7 +429,7 @@ describe('FlatSequence . Maybe', () => {
       x => [`a - ${x.toString()}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = monads.chainM(monad)(fs)
+    const result = monads.chainM(monad)(...fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -458,11 +448,7 @@ describe('FlatSequence . Maybe', () => {
 describe('Maybe . FlatSequence', () => {
   const monad = monads.composeM(monads.Maybe)(monads.FlatSequence)
   it('always return a Maybe', () => {
-    const fs = [
-      x => x
-    ]
-
-    const result = monads.chainM(monad)(fs)
+    const result = monads.chainM(monad)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
@@ -477,7 +463,7 @@ describe('Maybe . FlatSequence', () => {
       x => `${x}!`
     ]
 
-    const result = monads.chainM(monad)(fs)
+    const result = monads.chainM(monad)(...fs)
 
     expect(result(1)).toEqual(['2!', '3!'])
     expect(result([1])).toEqual(['2!', '3!'])
@@ -491,7 +477,7 @@ describe('Maybe . FlatSequence', () => {
       x => undefined
     ]
 
-    const result = monads.chainM(monad)(fs)
+    const result = monads.chainM(monad)(...fs)
 
     expect(result(1)).toEqual([undefined, undefined]) // not great
   })
