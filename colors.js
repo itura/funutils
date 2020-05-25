@@ -1,22 +1,7 @@
-const { repeat, chain, compose } = require('./common')
-
-// https://misc.flogisoft.com/bash/tip_colors_and_formatting
-
-const ESC = '\u{1b}['
-const _color = (code, fill = false) => value =>
-  `${ESC}${fill ? '48' : '38'};5;${code}m${value}${ESC}0m`
-
-const color = code => [_color(code, false), _color(code, true)]
-
-const style = code => value => `${ESC}${code};38;5;0m${value}${ESC}0m`
-const styles = {
-  bold: style(1),
-  dim: style(2),
-  underline: style(4),
-  reverse: style(7)
-}
+const { repeat, compose, Builder } = require('./common')
 
 // http://ascii-table.com/ansi-escape-sequences.php
+const ESC = '\u{1b}['
 const eraseLine = `${ESC}1K`
 const eraseDisplay = `${ESC}2J`
 const cursor = (line, column) => `${ESC}${line};${column}H`
@@ -25,19 +10,77 @@ const cursorDown = x => `${ESC}${x}B`
 const cursorForward = x => `${ESC}${x}C`
 const cursorBack = x => `${ESC}${x}D`
 
-const [red, redBg] = color(160)
-const [green, greenBg] = color(34)
-const [gray, grayBg] = color(247)
-const [white, whiteBg] = color(231)
-const [yellow, yellowBg] = color(3)
-const [purple, purpleBg] = color(90)
+// https://misc.flogisoft.com/bash/tip_colors_and_formatting
+const _color = ({ code, fill, style }) => value =>
+  `${ESC}${style ? `${style};` : ''}${fill ? '48' : '38'};5;${code}m${value}${ESC}0m`
 
-const blend = (f, ...fs) => chain(f, ...fs.map(compose))
+const _plain = ({ style }) => value => style
+  ? `${ESC}${style}m${value}${ESC}0m`
+  : value
+
+const styleCodes = {
+  Bold: 1,
+  Dim: 2,
+  Underline: 4,
+  Blink: 5,
+  Reverse: 7,
+  Hidden: 8
+}
+
+const colorCodes = {
+  Black: 0,
+  Red: 1,
+  Yellow: 3,
+  Blue: 21,
+  Green: 34,
+  Teal: 51,
+  Purple: 90,
+  Pink: 165,
+  White: 231,
+  DarkGray: 242,
+  Gray: 247,
+  LightGray: 254
+}
+
+const Color = (config = {}) => {
+  const fg = config.fg
+  const bg = config.bg
+  const style = config.style
+
+  if (fg !== undefined && bg !== undefined) {
+    return compose(
+      _color({ code: fg, fill: false, style })
+    )(
+      _color({ code: bg, fill: true })
+    )
+  }
+
+  if (fg !== undefined) {
+    return _color({ code: fg, fill: false, style })
+  }
+
+  if (bg !== undefined) {
+    return _color({ code: bg, fill: true, style })
+  }
+
+  return _plain({ style })
+}
+
+const [Colors, ColorsWith, ColorF] = Builder(Color)
+
+const fg = code => () => ({ fg: code })
+const bg = code => () => ({ bg: code })
+const style = code => () => ({ style: code })
+
+const bold = () => ({ style: styleCodes.Bold })
+const dim = () => ({ style: styleCodes.Dim })
+const underline = () => ({ style: styleCodes.Underline })
+const reverse = () => ({ style: styleCodes.Reverse })
 
 const showColors = (text = 'boop') => {
   if (text.length < 4) throw new TypeError('Provide text at least 4 characters long')
 
-  const header = blend(purpleBg, white, styles.bold)
+  const header = Colors(bold, fg(colorCodes.White), bg(colorCodes.Purple))
   const column = v => `|${v}`.padEnd((text.length + 1) * 2)
   const columnHeaders = `color${column('normal')}${column('bold')}${column('underline')}${column('dim')}`
   const title = 'ANSI/VT100 Control Sequences (256 colors)'.padEnd(columnHeaders.length)
@@ -46,28 +89,44 @@ const showColors = (text = 'boop') => {
   console.log(header(columnHeaders))
 
   repeat(256, i => {
-    const [current, currentBg] = color(i)
-    const coloredText = current(text)
-    const coloredBg = white(currentBg(text))
+    const current = ColorsWith(fg(i))
+    const currentBg = ColorsWith(fg(colorCodes.White), bg(i))
+    const variations = [
+      current(),
+      currentBg(),
+      current(bold),
+      currentBg(bold),
+      current(underline),
+      currentBg(underline),
+      current(dim),
+      currentBg(dim)
+    ]
 
     console.log(
       i.toString().padEnd(5),
-      coloredText,
-      coloredBg,
-      styles.bold(coloredText),
-      styles.bold(coloredBg),
-      styles.underline(coloredText),
-      styles.underline(coloredBg),
-      styles.dim(coloredText),
-      styles.dim(coloredBg)
+      ...variations.map(v => v(text))
     )
   })
 }
 
 module.exports = {
-  color,
-  styles,
-  blend,
+  Color,
+  Colors,
+  ColorsWith,
+  ColorF,
+
+  fg,
+  bg,
+  ...colorCodes,
+
+  style,
+  ...styleCodes,
+  bold,
+  dim,
+  underline,
+  reverse,
+
+  ESC,
   eraseLine,
   eraseDisplay,
   cursor,
@@ -75,17 +134,5 @@ module.exports = {
   cursorDown,
   cursorForward,
   cursorBack,
-  showColors,
-  red,
-  redBg,
-  green,
-  greenBg,
-  gray,
-  grayBg,
-  white,
-  whiteBg,
-  yellow,
-  yellowBg,
-  purple,
-  purpleBg
+  showColors
 }

@@ -3,14 +3,30 @@ const id = x => x
 const compose = f => g => x => f(g(x))
 
 const chain = (...fs) =>
-  fs.reduce(
-    (result, f) => f(result)
-  )
+  fs.reduce((result, f) => f(result))
 
 const chainP = (...fs) =>
-  fs.reduce(
-    (chain, f) => chain.then(f)
-  )
+  fs.reduce((chain, f) => chain.then(f))
+
+const applyF = F => f => F.map(f)
+
+const chainF = F => (...fs) =>
+  [F, ...fs].reduce((F, f) => applyF(F)(f))
+
+const Builder = factory => {
+  const BuilderF = (config = {}) => ({
+    map: f => BuilderF({ ...config, ...f(config) }),
+    apply: v => factory(config)(v)
+  })
+
+  const build = (...fs) =>
+    chainF(BuilderF())(...fs).apply
+
+  const buildWith = (...fs) => (...gs) =>
+    chainF(BuilderF())(...fs, ...gs).apply
+
+  return [build, buildWith, BuilderF]
+}
 
 const map = f => array => array.map(f)
 const filter = f => array => array.filter(f)
@@ -46,6 +62,9 @@ const repeat = (count, fn) =>
 module.exports = {
   chain,
   chainP,
+  applyF,
+  chainF,
+  Builder,
   map,
   filter,
   compact,

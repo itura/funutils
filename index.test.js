@@ -27,6 +27,34 @@ describe('funutils', () => {
 
     expect(funutils.repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 
+    expect(
+      funutils.applyF(['hi'])(
+        x => `${x}!`
+      )
+    ).toEqual(['hi!'])
+
+    expect(
+      funutils.chainF(['hi'])(
+        x => `${x}!`,
+        x => `${x}${x}`
+      )
+    ).toEqual(['hi!hi!'])
+
+    const [build] = funutils.Builder(config => value => [config, value])
+    expect(
+      build(
+        () => ({ beep: 'MEEP' }),
+        () => ({ beep: 'BEEP' }),
+        () => ({ boop: 'BOOP' })
+      )('hi')
+    ).toEqual([
+      {
+        beep: 'BEEP',
+        boop: 'BOOP'
+      },
+      'hi'
+    ])
+
     return funutils.chainP(
       Promise.resolve(1),
       x => Promise.resolve(x + 2),
@@ -161,16 +189,16 @@ describe('funutils', () => {
   })
 
   test('colors', () => {
-    const { color, purple, purpleBg, styles, blend } = funutils.colors
-    const [someColor, someColorBg] = color(248)
-    // styles have to go last
-    const boldPurple = blend(purple, styles.bold)
-    const custom = blend(purpleBg, someColor, styles.bold)
+    const { Colors, Purple, fg, bg, bold, underline } = funutils.colors
+    const someColor = fg(248)
+    const someColorBg = bg(248)
+    const boldPurple = Colors(fg(Purple), bold)
+    const custom = Colors(someColor, bold, bg(Purple))
 
     console.log(
-      styles.underline(purple(someColorBg('fun ')))
-      + custom(' utils ')
-      + boldPurple(' sure is fun!')
+      Colors(fg(Purple), someColorBg, underline)('fun ') +
+      custom(' utils ') +
+      boldPurple(' sure is fun!')
     )
   })
 })

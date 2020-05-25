@@ -1,9 +1,16 @@
 const { chain, map, reduce, flatten, tap } = require('./common')
-const { blend, styles, red, redBg, green, greenBg, gray, white, yellowBg, eraseLine } = require('./colors')
+const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, bold, eraseLine } = require('./colors')
 
-const boldWhite = blend(white, styles.bold)
-const running = boldWhite(yellowBg(' RUNNING '))
-const status = passed => boldWhite(passed ? greenBg(' PASS ') : redBg(' FAIL '))
+const lineItemText = Colors(fg(Gray))
+const statusText = ColorsWith(fg(White), bold)
+const running = statusText(bg(Yellow))(' RUNNING ')
+const status = passed => passed
+  ? statusText(bg(Green))(' PASS ')
+  : statusText(bg(Red))(' FAIL ')
+
+const greenCheck = Colors(fg(Green))('☑︎')
+const redCheck = Colors(fg(Red))('☒')
+const skippedCheck = Colors(bold)('◻︎')
 
 const PerfTestReporter = function () {}
 
@@ -26,8 +33,10 @@ PerfTestReporter.prototype = {
         (acc, r) => {
           const describes = r.ancestorTitles.join(' ')
           const existing = acc[describes]
+          const [expectedDuration, title] = r.title.split('#')
           const next = {
-            title: r.title,
+            title,
+            expectedDuration,
             duration: r.duration,
             passed: r.status === 'passed',
             pending: r.status === 'pending',
@@ -50,13 +59,13 @@ PerfTestReporter.prototype = {
         const passed = results.filter(r => !r.passed && !r.pending).length === 0
 
         return [`  ${status(passed)} ${description}`, ...results.map(r => {
-          const _title = r.title.split('#')
           const actualDuration = `${r.duration}`.padEnd(5)
-          const expectedDuration = _title[0].padEnd(5)
+          const expectedDuration = r.expectedDuration.padEnd(5)
           const durationText = `${actualDuration} < ${expectedDuration} `
-          const icon = r.passed ? green('☑︎') : r.pending ? styles.bold('◻︎') : red('☒')
+          const icon = r.passed ? greenCheck : r.pending ? skippedCheck : redCheck
           const errors = r.passed || r.pending ? '' : `\n${r.errors.join('\n')}\n`
-          return `    ${icon} ${gray(`${durationText}${_title[1]}`)} ${errors}`
+
+          return `    ${icon} ${lineItemText(`${durationText}${r.title}`)} ${errors}`
         })]
       }),
 
