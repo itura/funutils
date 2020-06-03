@@ -1,12 +1,13 @@
 /* eslint-env jest */
 
-const monads = require('./')
-const { Maybe, Just, Nothing } = require('../maybe')
-const { compose, id } = require('../common')
+const monads = require('./monads')
+const { applyM, chainM, composeM } = require('./common')
+const { Maybe, Just, Nothing } = require('./maybe')
+const { compose, id } = require('./common')
 
 describe('Maybe', () => {
   it('applies identity', () => {
-    const result = monads.applyM(monads.Maybe)(id)
+    const result = applyM(monads.Maybe)(id)
 
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
@@ -18,7 +19,7 @@ describe('Maybe', () => {
   })
 
   it('safely chains functions', () => {
-    const result = monads.chainM(monads.Maybe)(
+    const result = chainM(monads.Maybe)(
       x => x,
       x => x.toString()
     )
@@ -69,10 +70,10 @@ describe('Maybe', () => {
 })
 
 describe('FlatSequence', () => {
-  const chainM = monads.chainM(monads.FlatSequence)
+  const chainFlat = chainM(monads.FlatSequence)
 
   it('applies identity', () => {
-    const result = monads.applyM(monads.FlatSequence)(id)
+    const result = applyM(monads.FlatSequence)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -86,7 +87,7 @@ describe('FlatSequence', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -95,7 +96,7 @@ describe('FlatSequence', () => {
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -106,7 +107,7 @@ describe('FlatSequence', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [x, [x, x]],
       x => `${x}!`
     )
@@ -118,7 +119,7 @@ describe('FlatSequence', () => {
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM(
+    const result = chainFlat(
       () => [1, [2, 3]]
     )
 
@@ -165,10 +166,10 @@ describe('FlatSequence', () => {
 })
 
 describe('SomethingMonad', () => {
-  const chainM = monads.chainM(monads.Something)
+  const chainFlat = chainM(monads.Something)
 
   it('applies identity', () => {
-    const result = monads.applyM(monads.Something)(id)
+    const result = applyM(monads.Something)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -180,7 +181,7 @@ describe('SomethingMonad', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -189,7 +190,7 @@ describe('SomethingMonad', () => {
   })
 
   it('returns Nothing instead of applying functions to Nothings from the input', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x.toString()
     )
 
@@ -197,7 +198,7 @@ describe('SomethingMonad', () => {
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => null,
       x => x.toString()
     )
@@ -206,7 +207,7 @@ describe('SomethingMonad', () => {
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -217,7 +218,7 @@ describe('SomethingMonad', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [x, [x, x]],
       x => `${x}!`
     )
@@ -229,7 +230,7 @@ describe('SomethingMonad', () => {
   })
 
   it('filters nested Nothings from the results of previous functions', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [null, 1, Nothing],
       x => x.toString()
     )
@@ -238,7 +239,7 @@ describe('SomethingMonad', () => {
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [x, [x, x], null]
     )
 
@@ -284,11 +285,11 @@ describe('SomethingMonad', () => {
 })
 
 describe('FlatSequence . Maybe', () => {
-  const monad = monads.composeM(monads.FlatSequence)(monads.Maybe)
-  const chainM = monads.chainM(monad)
+  const monad = composeM(monads.FlatSequence)(monads.Maybe)
+  const chainFlat = chainM(monad)
 
   it('applies identity', () => {
-    const result = monads.applyM(monad)(id)
+    const result = applyM(monad)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
@@ -300,7 +301,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('applies functions to a single element', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -309,7 +310,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('returns Nothing instead of applying functions to Nothings from the input', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x.toString()
     )
 
@@ -317,7 +318,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => null,
       x => x.toString()
     )
@@ -326,7 +327,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('applies functions to each element of an input sequence', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => x + 1,
       x => `${x}!`
     )
@@ -337,7 +338,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('applies functions to each element of a sequence returned by a previous function', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [x, [x, x]],
       x => `${x}!`
     )
@@ -349,7 +350,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('returns Nothing instead of applying functions to nested Nothings from previous functions', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [null, 1, Nothing],
       x => x.toString()
     )
@@ -358,7 +359,7 @@ describe('FlatSequence . Maybe', () => {
   })
 
   it('does nothing to return values from the last function', () => {
-    const result = chainM(
+    const result = chainFlat(
       x => [x, [x, x], null]
     )
 
@@ -410,7 +411,7 @@ describe('FlatSequence . Maybe', () => {
       x => [`a - ${x}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = monads.chainM(monad)(...fs)
+    const result = chainM(monad)(...fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -429,7 +430,7 @@ describe('FlatSequence . Maybe', () => {
       x => [`a - ${x.toString()}`, `b - ${x}`, `c - ${x}`]
     ]
 
-    const result = monads.chainM(monad)(...fs)
+    const result = chainM(monad)(...fs)
 
     expect(result(1)).toEqual([
       'a - 2',
@@ -446,9 +447,9 @@ describe('FlatSequence . Maybe', () => {
 
 // not intended to be used this way, but informative to see
 describe('Maybe . FlatSequence', () => {
-  const monad = monads.composeM(monads.Maybe)(monads.FlatSequence)
+  const monad = composeM(monads.Maybe)(monads.FlatSequence)
   it('always return a Maybe', () => {
-    const result = monads.chainM(monad)(id)
+    const result = chainM(monad)(id)
 
     expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
@@ -463,7 +464,7 @@ describe('Maybe . FlatSequence', () => {
       x => `${x}!`
     ]
 
-    const result = monads.chainM(monad)(...fs)
+    const result = chainM(monad)(...fs)
 
     expect(result(1)).toEqual(['2!', '3!'])
     expect(result([1])).toEqual(['2!', '3!'])
@@ -477,7 +478,7 @@ describe('Maybe . FlatSequence', () => {
       x => undefined
     ]
 
-    const result = monads.chainM(monad)(...fs)
+    const result = chainM(monad)(...fs)
 
     expect(result(1)).toEqual([undefined, undefined]) // not great
   })

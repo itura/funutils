@@ -124,39 +124,39 @@ describe('funutils', () => {
     const { monads, id } = funutils
 
     expect(
-      monads.applyM(monads.Id)(id)(1)
+      funutils.applyM(monads.Id)(id)(1)
     ).toEqual(1)
 
     expect(
-      monads.applyM(monads.Maybe)(id)(1)
+      funutils.applyM(monads.Maybe)(id)(1)
     ).toEqual(1)
 
     expect(
-      monads.applyM(monads.Sequence())(id)(1)
+      funutils.applyM(monads.Sequence())(id)(1)
     ).toEqual(1)
 
     expect(
-      monads.applyM(monads.FlatSequence)(id)(1)
+      funutils.applyM(monads.FlatSequence)(id)(1)
     ).toEqual(1)
 
     expect(
-      monads.applyM(monads.Something)(id)(1)
+      funutils.applyM(monads.Something)(id)(1)
     ).toEqual(1)
 
     expect(
-      monads.chainM(monads.Something)(id, id)(1)
+      funutils.chainM(monads.Something)(id, id)(1)
     ).toEqual(1)
 
-    const m1 = monads.composeM(monads.FlatSequence)(monads.Maybe)
+    const m1 = funutils.composeM(monads.FlatSequence)(monads.Maybe)
     const m2 = monads.Something
     const data = [[1, 2], null, [4], 5]
 
     expect(
-      monads.chainM(m1)(id)(data)
+      funutils.chainM(m1)(id)(data)
     ).toEqual([1, 2, funutils.Maybe.Nothing, 4, 5])
 
     expect(
-      monads.chainM(m2)(id)(data)
+      funutils.chainM(m2)(id)(data)
     ).toEqual([1, 2, 4, 5])
   })
 

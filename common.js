@@ -1,7 +1,6 @@
 
 const id = x => x
 const compose = f => g => x => f(g(x))
-
 const apply = f => x => f(x)
 
 const chain = initial => (...fs) =>
@@ -14,16 +13,34 @@ const applyF = F => f =>
   F.map(f)
 
 const chainF = F => (...fs) =>
-  [F, ...fs].reduce((F, f) => applyF(F)(f))
+  fs.reduce(
+    (F, f) => applyF(F)(f),
+    F
+  )
 
 const applyP = P => f =>
   P.then(f)
 
-const chainP = P => (...fs) =>
+const chainP = (P = Promise.resolve()) => (...fs) =>
   fs.reduce(
     (P, f) => applyP(P)(f),
     P
   )
+
+const applyM = M => f => compose(M.bind(f))(M.unit)
+
+const chainM = M => (...fs) => initial =>
+  fs.reduce(
+    (prev, f) => applyM(M)(f)(prev),
+    initial
+  )
+
+const composeM = M1 => M2 => {
+  return {
+    bind: compose(M1.bind)(applyM(M2)),
+    unit: M1.unit
+  }
+}
 
 const map = f => array => array.map(f)
 const filter = f => array => array.filter(f)
@@ -78,6 +95,9 @@ module.exports = {
   chainF,
   applyP,
   chainP,
+  applyM,
+  chainM,
+  composeM,
   Builder,
   map,
   filter,

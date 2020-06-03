@@ -1,4 +1,4 @@
-const monads = require('../monads')
+const { chainM } = require('../common')
 const { lazyReduce } = require('./common')
 const { integers } = require('../generators')
 
@@ -31,7 +31,7 @@ const LazySeqM = (monad, generator = integers, config = {}) => {
     fs,
     reducer,
     initial,
-    result: (fs, next) => monads.chainM(monad)(...fs)(next)
+    result: (fs, next) => chainM(monad)(...fs)(next)
   })
 
   return {
