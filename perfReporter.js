@@ -26,9 +26,7 @@ PerfTestReporter.prototype = {
     process.stdout.write(`${eraseLine}\r`)
     console.log(`${status(passed)} Performance Report (${totalDuration.toFixed(0)} ms)`)
 
-    chain(
-      fileResults.testResults,
-
+    chain(fileResults.testResults)(
       reduce(
         (acc, r) => {
           const describes = r.ancestorTitles.join(' ')

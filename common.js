@@ -2,31 +2,28 @@
 const id = x => x
 const compose = f => g => x => f(g(x))
 
-const chain = (...fs) =>
-  fs.reduce((result, f) => f(result))
+const apply = f => x => f(x)
 
-const chainP = (...fs) =>
-  fs.reduce((chain, f) => chain.then(f))
+const chain = initial => (...fs) =>
+  fs.reduce(
+    (result, f) => apply(f)(result),
+    initial
+  )
 
-const applyF = F => f => F.map(f)
+const applyF = F => f =>
+  F.map(f)
 
 const chainF = F => (...fs) =>
   [F, ...fs].reduce((F, f) => applyF(F)(f))
 
-const Builder = factory => {
-  const BuilderF = (config = {}) => ({
-    map: f => BuilderF({ ...config, ...f(config) }),
-    apply: v => factory(config)(v)
-  })
+const applyP = P => f =>
+  P.then(f)
 
-  const build = (...fs) =>
-    chainF(BuilderF())(...fs).apply
-
-  const buildWith = (...fs) => (...gs) =>
-    chainF(BuilderF())(...fs, ...gs).apply
-
-  return [build, buildWith, BuilderF]
-}
+const chainP = P => (...fs) =>
+  fs.reduce(
+    (P, f) => applyP(P)(f),
+    P
+  )
 
 const map = f => array => array.map(f)
 const filter = f => array => array.filter(f)
@@ -59,11 +56,28 @@ const randomInt = (range, min = 0) =>
 const repeat = (count, fn) =>
   [...Array(count)].map((_, i) => fn(i))
 
+const Builder = factory => {
+  const BuilderF = (config = {}) => ({
+    map: f => BuilderF({ ...config, ...f(config) }),
+    apply: v => factory(config)(v)
+  })
+
+  const build = (...fs) =>
+    chainF(BuilderF())(...fs).apply
+
+  const buildWith = (...fs) => (...gs) =>
+    chainF(BuilderF())(...fs, ...gs).apply
+
+  return [build, buildWith, BuilderF]
+}
+
 module.exports = {
+  apply,
   chain,
-  chainP,
   applyF,
   chainF,
+  applyP,
+  chainP,
   Builder,
   map,
   filter,

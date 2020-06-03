@@ -17,8 +17,7 @@ const SequenceMonad = (...operations) => {
     unit: x => [x],
     bind: f => caseMap({
       one: x => f(x),
-      many: xs => chain(
-        xs,
+      many: xs => chain(xs)(
         map(x => f(x)),
         ...operations,
         flatten()

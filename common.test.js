@@ -4,16 +4,13 @@ const { chain, map, filter, compact, flatten, reduce, zip, randomInt, repeat } =
 
 test('common', () => {
   expect(
-    chain(
-      [1, 2, 3]
-    )
+    chain([1, 2, 3])()
   ).toEqual(
     [1, 2, 3]
   )
 
   expect(
-    chain(
-      [1, 2, 3],
+    chain([1, 2, 3])(
       map(x => x + 1)
     )
   ).toEqual(
@@ -21,8 +18,7 @@ test('common', () => {
   )
 
   expect(
-    chain(
-      [1, 2, 3],
+    chain([1, 2, 3])(
       filter(x => x % 2 === 0)
     )
   ).toEqual(
@@ -30,8 +26,7 @@ test('common', () => {
   )
 
   expect(
-    chain(
-      [0, 1, 2, 3, [], undefined, null, ''],
+    chain([0, 1, 2, 3, [], undefined, null, ''])(
       compact()
     )
   ).toEqual(
@@ -39,8 +34,7 @@ test('common', () => {
   )
 
   expect(
-    chain(
-      [1, [2], [[3]]],
+    chain([1, [2], [[3]]])(
       flatten()
     )
   ).toEqual(
@@ -48,8 +42,7 @@ test('common', () => {
   )
 
   expect(
-    chain(
-      [1, 2, 3],
+    chain([1, 2, 3])(
       reduce((sum, x) => sum + x, 0)
     )
   ).toEqual(
@@ -57,8 +50,7 @@ test('common', () => {
   )
 
   expect(
-    chain(
-      [1, undefined, 2, [3], 4],
+    chain([1, undefined, 2, [3], 4])(
       compact(),
       flatten(),
       filter(x => x < 4),

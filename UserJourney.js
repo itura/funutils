@@ -33,8 +33,7 @@ const UserJourney = (page, onFail, config = {}) => {
   }
 
   const run = () => {
-    return chainP(
-      Promise.resolve(),
+    return chainP(Promise.resolve())(
       ...steps.map(({ description, action }) =>
         () => action(page).catch(e => {
           log(`Error in "${description}"`)

@@ -3,63 +3,79 @@
 const funutils = require('./')
 
 describe('funutils', () => {
-  test('common', () => {
-    expect(
-      funutils.chain(
-        [1, 2, 3],
-        funutils.map(x => x + 1),
-        funutils.filter(x => x % 2 === 1),
-        funutils.map(x => [x, null]),
-        funutils.flatten(),
-        funutils.compact(),
-        funutils.reduce(
-          (acc, x) => acc + (x === null ? 2 : x),
-          0
+  describe('common', () => {
+    test('chain and operators', () => {
+      expect(
+        funutils.chain([1, 2, 3])(
+          funutils.map(x => x + 1),
+          funutils.filter(x => x % 2 === 1),
+          funutils.map(x => [x, null]),
+          funutils.flatten(),
+          funutils.compact(),
+          funutils.reduce(
+            (acc, x) => acc + (x === null ? 2 : x),
+            0
+          )
         )
+      ).toEqual(3)
+    })
+
+    test('functor utilities', () => {
+      expect(
+        funutils.applyF(['hi'])(
+          x => `${x}!`
+        )
+      ).toEqual(['hi!'])
+
+      expect(
+        funutils.chainF(['hi'])(
+          x => `${x}!`,
+          x => `${x}${x}`
+        )
+      ).toEqual(['hi!hi!'])
+
+      const { Maybe, Just, Nothing } = funutils.Maybe
+      const fun = x => `${x}!`
+      expect(
+        funutils.chainF(Maybe(null))(fun, fun)
+      ).toStrictEqual(Nothing)
+
+      expect(
+        funutils.chainF(Maybe('hi'))(fun, fun)
+      ).toStrictEqual(Just('hi!!'))
+    })
+
+    test('chainP', () => {
+      return funutils.chainP(Promise.resolve(1))(
+        x => Promise.resolve(x + 2),
+        r => expect(r).toEqual(3)
       )
-    ).toEqual(3)
+    })
 
-    expect(funutils.zip([1, 2], ['a', 'b'])).toEqual(
-      [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
-    )
-
-    expect(funutils.randomInt(5)).toBeLessThan(5)
-
-    expect(funutils.repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
-
-    expect(
-      funutils.applyF(['hi'])(
-        x => `${x}!`
+    test('misc', () => {
+      expect(funutils.zip([1, 2], ['a', 'b'])).toEqual(
+        [[1, 'a'], [1, 'b'], [2, 'a'], [2, 'b']]
       )
-    ).toEqual(['hi!'])
 
-    expect(
-      funutils.chainF(['hi'])(
-        x => `${x}!`,
-        x => `${x}${x}`
-      )
-    ).toEqual(['hi!hi!'])
+      expect(funutils.randomInt(5)).toBeLessThan(5)
 
-    const [build] = funutils.Builder(config => value => [config, value])
-    expect(
-      build(
-        () => ({ beep: 'MEEP' }),
-        () => ({ beep: 'BEEP' }),
-        () => ({ boop: 'BOOP' })
-      )('hi')
-    ).toEqual([
-      {
-        beep: 'BEEP',
-        boop: 'BOOP'
-      },
-      'hi'
-    ])
+      expect(funutils.repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 
-    return funutils.chainP(
-      Promise.resolve(1),
-      x => Promise.resolve(x + 2),
-      r => expect(r).toEqual(3)
-    )
+      const [build] = funutils.Builder(config => value => [config, value])
+      expect(
+        build(
+          config => ({ beep: 'MEEP' }),
+          config => ({ beep: config.beep + '!' }),
+          config => ({ boop: 'BOOP' })
+        )('hi')
+      ).toEqual([
+        {
+          beep: 'MEEP!',
+          boop: 'BOOP'
+        },
+        'hi'
+      ])
+    })
   })
 
   test('Maybe', () => {

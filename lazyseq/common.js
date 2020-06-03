@@ -5,7 +5,7 @@ const lazyReduce = ({ generator, fs, result, reducer, initial }) => {
     acc = reducer(acc, x)
   }
 
-  const take = n => {
+  return n => {
     const iterator = generator()
     const _fs = fs.concat(_reduce)
 
@@ -21,8 +21,6 @@ const lazyReduce = ({ generator, fs, result, reducer, initial }) => {
 
     return acc
   }
-
-  return take
 }
 
 module.exports = { lazyReduce }

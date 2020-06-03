@@ -1,5 +1,11 @@
 
-function Just (value) {
+const map = function (f) {
+  return caseMap({
+    nothing: () => nothing,
+    just: value => Just(f(value))
+  })(this)
+}
+const Just = function (value) {
   if (!(this instanceof Just)) {
     return new Just(value)
   }
@@ -10,7 +16,7 @@ Just.prototype = {
   map
 }
 
-function Nothing () {
+const Nothing = function () {
 }
 Nothing.prototype = {
   map
@@ -38,13 +44,6 @@ const caseMap = cases => maybe => {
   }
 
   throw new TypeError(`Not a Maybe: ${maybe}`)
-}
-
-function map (f) {
-  return caseMap({
-    nothing: () => nothing,
-    just: value => Just(f(value))
-  })(this)
 }
 
 module.exports = {
