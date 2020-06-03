@@ -1,13 +1,22 @@
-
 const id = x => x
-const compose = f => g => x => f(g(x))
 const apply = f => x => f(x)
+const compose = f => g => x => f(g(x))
 
 const chain = initial => (...fs) =>
   fs.reduce(
     (result, f) => apply(f)(result),
     initial
   )
+
+const map = f => array => array.map(f)
+const filter = f => array => array.filter(f)
+const compact = () => array => array.filter(x => x || x === 0)
+const flatten = (n = 1) => array => array.flat(n)
+const reduce = (f, initial) => array => array.reduce(f, initial)
+const tap = f => x => {
+  f(x)
+  return x
+}
 
 const applyF = F => f =>
   F.map(f)
@@ -27,7 +36,8 @@ const chainP = (P = Promise.resolve()) => (...fs) =>
     P
   )
 
-const applyM = M => f => compose(M.bind(f))(M.unit)
+const applyM = M => f =>
+  compose(M.bind(f))(M.unit)
 
 const chainM = M => (...fs) => initial =>
   fs.reduce(
@@ -40,16 +50,6 @@ const composeM = M1 => M2 => {
     bind: compose(M1.bind)(applyM(M2)),
     unit: M1.unit
   }
-}
-
-const map = f => array => array.map(f)
-const filter = f => array => array.filter(f)
-const compact = () => array => array.filter(x => x || x === 0)
-const flatten = (n = 1) => array => array.flat(n)
-const reduce = (f, initial) => array => array.reduce(f, initial)
-const tap = f => x => {
-  f(x)
-  return x
 }
 
 const _zip = (combo, ...xss) => {

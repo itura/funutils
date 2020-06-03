@@ -10,7 +10,7 @@ const MaybeMonad = {
   unit: Maybe,
   bind: f => caseMap({
     nothing: () => Nothing,
-    just: value => f(value)
+    just: apply(f)
   })
 }
 
@@ -32,7 +32,7 @@ const SequenceMonad = (...operations) => {
     bind: f => seqCaseMap({
       one: apply(f),
       many: xs => chain(xs)(
-        map(x => f(x)),
+        map(apply(f)),
         ...operations,
         flatten()
       )
