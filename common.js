@@ -8,10 +8,16 @@ const chain = initial => (...fs) =>
     initial
   )
 
+const chainWith = wrapper => initial => (...fs) =>
+  chain(initial)(
+    ...fs.map(wrapper)
+  )
+
 const map = f => array => array.map(f)
 const filter = f => array => array.filter(f)
 const compact = () => array => array.filter(x => x || x === 0)
 const flatten = (n = 1) => array => array.flat(n)
+const sort = f => array => array.sort(f)
 const reduce = (f, initial) => array => array.reduce(f, initial)
 const tap = f => x => {
   f(x)
@@ -30,11 +36,27 @@ const chainF = F => (...fs) =>
 const applyP = P => f =>
   P.then(f)
 
-const chainP = (P = Promise.resolve()) => (...fs) =>
+const chainP = init => (...fs) =>
   fs.reduce(
     (P, f) => applyP(P)(f),
-    P
+    Promise.resolve(init)
   )
+
+const time = async (action) => {
+  const t0 = performance.now()
+  const result = await action()
+  const t1 = performance.now()
+  const durationMs = t1 - t0
+  return [durationMs, result]
+}
+
+const fail = e => {
+  console.error(e)
+  process.exit(1)
+}
+
+const sum = (init = 0) => reduce((acc, x) => acc + x, init)
+const buildLines = (init = '') => reduce((acc, x) => acc + '\n' + x)
 
 const applyM = M => f =>
   compose(M.bind(f))(M.unit)
@@ -91,6 +113,7 @@ const Builder = factory => {
 module.exports = {
   apply,
   chain,
+  chainWith,
   applyF,
   chainF,
   applyP,
@@ -109,5 +132,7 @@ module.exports = {
   tap,
   zip,
   randomInt,
-  repeat
+  repeat,
+  time,
+  fail
 }

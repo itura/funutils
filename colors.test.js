@@ -73,6 +73,16 @@ describe('colors', () => {
       expect(Color({ style: colors.Hidden })('hi')).toEqual(`${ESC}8mhi${ESC}0m`)
     })
 
+    it('sets the padding', () => {
+      expect(
+        Color({ pad: colors.padEnd(4) })('hi')
+      ).toEqual('hi  ')
+
+      expect(
+        Color({ pad: colors.padStart(4) })('hi')
+      ).toEqual('  hi')
+    })
+
     it('sets the foreground and style', () => {
       expect(
         Color({ fg: 77, style: 1 })('hi')
@@ -102,6 +112,14 @@ describe('colors', () => {
         Color({ fg: 66, bg: 77, style: 1 })('hi')
       ).toEqual(
         `${ESC}1;38;5;66m${ESC}48;5;77mhi${ESC}0m${ESC}0m`
+      )
+    })
+
+    it('sets the foreground and background and style and padding', () => {
+      expect(
+        Color({ fg: 66, bg: 77, style: 1, pad: colors.padEnd(4) })('hi')
+      ).toEqual(
+        `${ESC}1;38;5;66m${ESC}48;5;77mhi  ${ESC}0m${ESC}0m`
       )
     })
   })

@@ -1,4 +1,4 @@
-const { repeat, compose, Builder } = require('./common')
+const { chain, repeat, compose, Builder, id } = require('./common')
 
 // http://ascii-table.com/ansi-escape-sequences.php
 const ESC = '\u{1b}['
@@ -46,24 +46,26 @@ const Color = (config = {}) => {
   const fg = config.fg
   const bg = config.bg
   const style = config.style
+  const pad = config.pad || id
+
+  const withPad = (...fs) => chain(pad)(...fs.map(compose))
 
   if (fg !== undefined && bg !== undefined) {
-    return compose(
+    return withPad(
+      _color({ code: bg, fill: true }),
       _color({ code: fg, fill: false, style })
-    )(
-      _color({ code: bg, fill: true })
     )
   }
 
   if (fg !== undefined) {
-    return _color({ code: fg, fill: false, style })
+    return withPad(_color({ code: fg, fill: false, style }))
   }
 
   if (bg !== undefined) {
-    return _color({ code: bg, fill: true, style })
+    return withPad(_color({ code: bg, fill: true, style }))
   }
 
-  return _plain({ style })
+  return withPad(_plain({ style }))
 }
 
 const [Colors, ColorsWith, ColorF] = Builder(Color)
@@ -77,7 +79,7 @@ const dim = () => ({ style: styleCodes.Dim })
 const underline = () => ({ style: styleCodes.Underline })
 const reverse = () => ({ style: styleCodes.Reverse })
 
-const showColors = (text = 'boop') => {
+const showColors = (text = 'withPad') => {
   if (text.length < 4) throw new TypeError('Provide text at least 4 characters long')
 
   const header = Colors(bold, fg(colorCodes.White), bg(colorCodes.Purple))
@@ -109,6 +111,11 @@ const showColors = (text = 'boop') => {
   })
 }
 
+const toFixed = n => x => x.toFixed(n)
+const padEnd = n => x => x.padEnd(n)
+const padStart = n => x => x.padStart(n)
+const toString = x => x.toString()
+
 module.exports = {
   Color,
   Colors,
@@ -121,10 +128,15 @@ module.exports = {
 
   style,
   ...styleCodes,
-  bold,
   dim,
   underline,
   reverse,
+  bold,
+
+  padEnd,
+  padStart,
+  toString,
+  toFixed,
 
   ESC,
   eraseLine,

@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { chain, map, filter, compact, flatten, reduce, zip, randomInt, repeat } = require('./common')
+const { chainP, chain, chainWith, compose, id, map, filter, compact, flatten, reduce, zip, randomInt, repeat } = require('./common')
 
 test('common', () => {
   expect(
@@ -89,4 +89,50 @@ test('common', () => {
   repeat(50, () => expect(randomInt(5, 1)).toBeLessThan(6))
 
   expect(repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
+})
+
+describe('chainWith', () => {
+  it('do', () => {
+    const composeMany = chainWith(compose)
+
+    expect(composeMany(id)(id, id)('hi')).toEqual('hi')
+
+    const emphasize = composeMany(x => `${x}!`)
+
+    expect(
+      emphasize()('hi')
+    ).toEqual(
+      'hi!'
+    )
+
+    expect(
+      emphasize(x => `${x}?`)('hi')
+    ).toEqual(
+      'hi!?'
+    )
+
+    expect(
+      emphasize(
+        x => `${x}?`,
+        x => x.toUpperCase(),
+      )('hi')
+    ).toEqual(
+      'HI!?'
+    )
+  })
+})
+describe('chainP', () => {
+  test('default chainP', async () => {
+    await chainP()(
+      x => expect(x).toEqual(undefined)
+    )
+
+    await chainP('hi')(
+      x => expect(x).toEqual('hi')
+    )
+
+    await chainP(Promise.resolve('hi'))(
+      x => expect(x).toEqual('hi')
+    )
+  })
 })
