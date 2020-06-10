@@ -1,5 +1,6 @@
 
 module.exports = {
+  array: require('./array'),
   monads: require('./monads'),
   Maybe: require('./maybe'),
   generators: require('./generators'),

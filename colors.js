@@ -1,4 +1,5 @@
 const { chain, repeat, compose, Builder, id } = require('./common')
+const { map } = require('./array')
 
 // http://ascii-table.com/ansi-escape-sequences.php
 const ESC = '\u{1b}['
@@ -48,7 +49,7 @@ const Color = (config = {}) => {
   const style = config.style
   const pad = config.pad || id
 
-  const withPad = (...fs) => chain(pad)(...fs.map(compose))
+  const withPad = (...fs) => chain(pad)(...map(compose)(fs))
 
   if (fg !== undefined && bg !== undefined) {
     return withPad(
@@ -79,7 +80,7 @@ const dim = () => ({ style: styleCodes.Dim })
 const underline = () => ({ style: styleCodes.Underline })
 const reverse = () => ({ style: styleCodes.Reverse })
 
-const showColors = (text = 'withPad') => {
+const showColors = (text = 'boop') => {
   if (text.length < 4) throw new TypeError('Provide text at least 4 characters long')
 
   const header = Colors(bold, fg(colorCodes.White), bg(colorCodes.Purple))
@@ -106,7 +107,7 @@ const showColors = (text = 'withPad') => {
 
     console.log(
       i.toString().padEnd(5),
-      ...variations.map(v => v(text))
+      ...map(v => v(text))(variations)
     )
   })
 }

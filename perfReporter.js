@@ -1,4 +1,5 @@
-const { chain, map, reduce, flatten, tap } = require('./common')
+const { chain, tap } = require('./common')
+const { map, reduce, flatten } = require('./array')
 const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, bold, eraseLine } = require('./colors')
 
 const lineItemText = Colors(fg(Gray))

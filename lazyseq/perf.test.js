@@ -3,21 +3,13 @@
 const LazySeqM = require('./LazySeqM')
 const LazySeq = require('./LazySeq')
 const monads = require('../monads')
-const { performance } = require('perf_hooks')
+const { time } = require('../common')
 
-const count = 20000
-
-const time = async (action) => {
-  const t0 = performance.now()
-  const result = await action()
-  const t1 = performance.now()
-  const durationMs = t1 - t0
-  return [result, durationMs]
-}
+const count = 24000
 
 const perfTest = (title, expectedDuration, action, check, t = test) => {
   t(`${expectedDuration}#${title}`, async () => {
-    const [results, duration] = await time(action)
+    const [duration, results] = await time(action)
 
     expect(duration).toBeLessThan(expectedDuration)
     check(results)

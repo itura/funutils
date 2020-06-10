@@ -1,4 +1,5 @@
-const { apply, composeM, id, filter, chain, map, flatten } = require('./common')
+const { apply, composeM, id, chain } = require('./common')
+const { map, flatten, filter } = require('./array')
 const { Nothing, caseMap, Maybe } = require('./maybe')
 
 const IdMonad = {

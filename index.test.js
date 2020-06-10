@@ -4,15 +4,17 @@ const funutils = require('./')
 
 describe('funutils', () => {
   describe('common', () => {
-    test('chain and operators', () => {
+    test('chain w/ Array', () => {
+      const { map, filter, flatten, compact, reduce } = funutils.array
+
       expect(
         funutils.chain([1, 2, 3])(
-          funutils.map(x => x + 1),
-          funutils.filter(x => x % 2 === 1),
-          funutils.map(x => [x, null]),
-          funutils.flatten(),
-          funutils.compact(),
-          funutils.reduce(
+          map(x => x + 1),
+          filter(x => x % 2 === 1),
+          map(x => [x, null]),
+          flatten(),
+          compact(),
+          reduce(
             (acc, x) => acc + (x === null ? 2 : x),
             0
           )

@@ -1,66 +1,8 @@
 /* eslint-env jest */
 
-const { chainP, chain, chainWith, compose, id, map, filter, compact, flatten, reduce, zip, randomInt, repeat } = require('./common')
+const { chainP, chainWith, compose, id, zip, randomInt, repeat } = require('./common')
 
 test('common', () => {
-  expect(
-    chain([1, 2, 3])()
-  ).toEqual(
-    [1, 2, 3]
-  )
-
-  expect(
-    chain([1, 2, 3])(
-      map(x => x + 1)
-    )
-  ).toEqual(
-    [2, 3, 4]
-  )
-
-  expect(
-    chain([1, 2, 3])(
-      filter(x => x % 2 === 0)
-    )
-  ).toEqual(
-    [2]
-  )
-
-  expect(
-    chain([0, 1, 2, 3, [], undefined, null, ''])(
-      compact()
-    )
-  ).toEqual(
-    [0, 1, 2, 3, []]
-  )
-
-  expect(
-    chain([1, [2], [[3]]])(
-      flatten()
-    )
-  ).toEqual(
-    [1, 2, [3]]
-  )
-
-  expect(
-    chain([1, 2, 3])(
-      reduce((sum, x) => sum + x, 0)
-    )
-  ).toEqual(
-    6
-  )
-
-  expect(
-    chain([1, undefined, 2, [3], 4])(
-      compact(),
-      flatten(),
-      filter(x => x < 4),
-      map(x => x - 1),
-      reduce((sum, x) => sum + x, 0)
-    )
-  ).toEqual(
-    3
-  )
-
   const one = [1, 2]
   const two = ['a', 'b']
   const three = [3, 4]
@@ -114,13 +56,14 @@ describe('chainWith', () => {
     expect(
       emphasize(
         x => `${x}?`,
-        x => x.toUpperCase(),
+        x => x.toUpperCase()
       )('hi')
     ).toEqual(
       'HI!?'
     )
   })
 })
+
 describe('chainP', () => {
   test('default chainP', async () => {
     await chainP()(

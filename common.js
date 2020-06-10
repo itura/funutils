@@ -1,46 +1,42 @@
+const { map, reduce } = require('./array')
+const { performance } = require('perf_hooks')
+
 const id = x => x
 const apply = f => x => f(x)
 const compose = f => g => x => f(g(x))
-
-const chain = initial => (...fs) =>
-  fs.reduce(
-    (result, f) => apply(f)(result),
-    initial
-  )
-
-const chainWith = wrapper => initial => (...fs) =>
-  chain(initial)(
-    ...fs.map(wrapper)
-  )
-
-const map = f => array => array.map(f)
-const filter = f => array => array.filter(f)
-const compact = () => array => array.filter(x => x || x === 0)
-const flatten = (n = 1) => array => array.flat(n)
-const sort = f => array => array.sort(f)
-const reduce = (f, initial) => array => array.reduce(f, initial)
 const tap = f => x => {
   f(x)
   return x
 }
 
+const chain = initial => (...fs) =>
+  reduce(
+    (result, f) => apply(f)(result),
+    initial
+  )(fs)
+
+const chainWith = wrapper => initial => (...fs) =>
+  chain(initial)(
+    ...map(wrapper)(fs)
+  )
+
 const applyF = F => f =>
   F.map(f)
 
 const chainF = F => (...fs) =>
-  fs.reduce(
+  reduce(
     (F, f) => applyF(F)(f),
     F
-  )
+  )(fs)
 
 const applyP = P => f =>
   P.then(f)
 
 const chainP = init => (...fs) =>
-  fs.reduce(
+  reduce(
     (P, f) => applyP(P)(f),
     Promise.resolve(init)
-  )
+  )(fs)
 
 const time = async (action) => {
   const t0 = performance.now()
@@ -54,9 +50,6 @@ const fail = e => {
   console.error(e)
   process.exit(1)
 }
-
-const sum = (init = 0) => reduce((acc, x) => acc + x, init)
-const buildLines = (init = '') => reduce((acc, x) => acc + '\n' + x)
 
 const applyM = M => f =>
   compose(M.bind(f))(M.unit)
@@ -122,11 +115,6 @@ module.exports = {
   chainM,
   composeM,
   Builder,
-  map,
-  filter,
-  compact,
-  flatten,
-  reduce,
   compose,
   id,
   tap,
