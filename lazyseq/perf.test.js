@@ -3,7 +3,7 @@
 const LazySeqM = require('./LazySeqM')
 const LazySeq = require('./LazySeq')
 const monads = require('../monads')
-const { time } = require('../common')
+const { time } = require('../perf')
 
 const count = 24000
 

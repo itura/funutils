@@ -1,11 +1,12 @@
 
 module.exports = {
   array: require('./array'),
+  colors: require('./colors'),
+  generators: require('./generators'),
   monads: require('./monads'),
   Maybe: require('./maybe'),
-  generators: require('./generators'),
+  perf: require('./perf'),
   UserJourney: require('./UserJourney'),
-  colors: require('./colors'),
-  ...require('./lazyseq'),
-  ...require('./common')
+  ...require('./common'),
+  ...require('./lazyseq')
 }

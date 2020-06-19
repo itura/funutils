@@ -1,5 +1,4 @@
 const { map, reduce } = require('./array')
-const { performance } = require('perf_hooks')
 
 const id = x => x
 const apply = f => x => f(x)
@@ -37,14 +36,6 @@ const chainP = init => (...fs) =>
     (P, f) => applyP(P)(f),
     Promise.resolve(init)
   )(fs)
-
-const time = async (action) => {
-  const t0 = performance.now()
-  const result = await action()
-  const t1 = performance.now()
-  const durationMs = t1 - t0
-  return [durationMs, result]
-}
 
 const fail = e => {
   console.error(e)
@@ -88,6 +79,8 @@ const randomInt = (range, min = 0) =>
 const repeat = (count, fn) =>
   [...Array(count)].map((_, i) => fn(i))
 
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
 const Builder = factory => {
   const BuilderF = (config = {}) => ({
     map: f => BuilderF({ ...config, ...f(config) }),
@@ -121,6 +114,6 @@ module.exports = {
   zip,
   randomInt,
   repeat,
-  time,
+  sleep,
   fail
 }

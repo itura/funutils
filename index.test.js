@@ -219,4 +219,14 @@ describe('funutils', () => {
       boldPurple(' sure is fun!')
     )
   })
+
+  test('perf', async () => {
+    const [durationMs, result] = await funutils.perf.time(async () => {
+      await funutils.sleep(50)
+      return 'wow so fast'
+    })
+
+    expect(durationMs).toBeGreaterThan(50)
+    expect(result).toEqual('wow so fast')
+  })
 })
