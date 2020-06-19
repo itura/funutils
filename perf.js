@@ -4,7 +4,7 @@
 //  - may eventually be available under `global.performance` https://github.com/nodejs/node/issues/28635
 
 // eslint-disable-next-line
-const p = performance || require('perf_hooks').performance
+const p = performance ? performance : require('perf_hooks').performance
 
 const time = async (action) => {
   const t0 = p.now()
