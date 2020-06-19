@@ -229,4 +229,46 @@ describe('funutils', () => {
     expect(durationMs).toBeGreaterThan(50)
     expect(result).toEqual('wow so fast')
   })
+
+  test('string', () => {
+    const { array, string } = funutils
+
+    expect(
+      funutils.chain('hi!')(
+        string.repeat(4),
+        string.split('!'),
+        ss => funutils.chain(ss)(
+          array.filter(string.includes('hi')),
+          array.filter(string.match(/hi/)),
+          array.map(s => funutils.chain(s)(
+            string.toUpperCase(),
+            string.padEnd(4)
+          )),
+          array.join('!')
+        )
+      )
+    ).toEqual(
+      'HI  !HI  !HI  !HI  '
+    )
+  })
+
+  test('number', () => {
+    expect(
+      funutils.number.toPrecision(3)(1.11111)
+    ).toEqual(
+      '1.11'
+    )
+
+    expect(
+      funutils.number.toFixed(2)(1.11111)
+    ).toEqual(
+      '1.11'
+    )
+
+    expect(
+      funutils.number.toLocaleString('de-DE')(123456.789)
+    ).toEqual(
+      '123.456,789'
+    )
+  })
 })

@@ -2,6 +2,7 @@
 
 const { chainF } = require('./common')
 const colors = require('./colors')
+const string = require('./string')
 
 describe('colors', () => {
   const { ESC } = colors
@@ -75,11 +76,11 @@ describe('colors', () => {
 
     it('sets the padding', () => {
       expect(
-        Color({ pad: colors.padEnd(4) })('hi')
+        Color({ pad: string.padEnd(4) })('hi')
       ).toEqual('hi  ')
 
       expect(
-        Color({ pad: colors.padStart(4) })('hi')
+        Color({ pad: string.padStart(4) })('hi')
       ).toEqual('  hi')
     })
 
@@ -117,7 +118,7 @@ describe('colors', () => {
 
     it('sets the foreground and background and style and padding', () => {
       expect(
-        Color({ fg: 66, bg: 77, style: 1, pad: colors.padEnd(4) })('hi')
+        Color({ fg: 66, bg: 77, style: 1, pad: string.padEnd(4) })('hi')
       ).toEqual(
         `${ESC}1;38;5;66m${ESC}48;5;77mhi  ${ESC}0m${ESC}0m`
       )
@@ -125,7 +126,7 @@ describe('colors', () => {
   })
 
   describe('ColorF, Colors, ColorsWith', () => {
-    const { ColorF, Colors, ColorsWith, fg, bg, style } = colors
+    const { ColorF, Colors, ColorsWith, fg, bg, style, padStart, padEnd } = colors
 
     it('does nothing with no mappings', () => {
       const expectedResult = 'hi'
@@ -199,14 +200,35 @@ describe('colors', () => {
       ).toEqual(expectedResult)
     })
 
+    it('sets the padding', () => {
+      const expectedResult = '  hi'
+
+      expect(
+        ColorF()
+          .map(() => ({ pad: string.padStart(4) }))
+          .apply('hi')
+      ).toEqual(expectedResult)
+
+      expect(
+        ColorF()
+          .map(padStart(4))
+          .apply('hi')
+      ).toEqual(expectedResult)
+
+      expect(
+        Colors(padStart(4))('hi')
+      ).toEqual(expectedResult)
+    })
+
     it('sets all attributes', () => {
-      const expectedResult = `${ESC}1;38;5;66m${ESC}48;5;77mhi${ESC}0m${ESC}0m`
+      const expectedResult = `${ESC}1;38;5;66m${ESC}48;5;77mhi  ${ESC}0m${ESC}0m`
 
       expect(
         ColorF()
           .map(fg(66))
           .map(bg(77))
           .map(style(1))
+          .map(padEnd(4))
           .apply('hi')
       ).toEqual(expectedResult)
 
@@ -214,28 +236,33 @@ describe('colors', () => {
         chainF(ColorF())(
           fg(66),
           bg(77),
-          style(1)
+          style(1),
+          padEnd(4)
         ).apply('hi')
       ).toEqual(expectedResult)
 
       expect(
-        Colors(fg(66), bg(77), style(1))('hi')
+        Colors(fg(66), bg(77), style(1), padEnd(4))('hi')
       ).toEqual(expectedResult)
 
       expect(
-        Colors(style(1), bg(77), fg(66))('hi')
+        Colors(style(1), bg(77), fg(66), padEnd(4))('hi')
       ).toEqual(expectedResult)
 
       expect(
-        ColorsWith()(style(1), bg(77), fg(66))('hi')
+        ColorsWith()(padEnd(4), style(1), bg(77), fg(66))('hi')
       ).toEqual(expectedResult)
 
       expect(
-        ColorsWith(style(1))(bg(77), fg(66))('hi')
+        ColorsWith(style(1))(padEnd(4), bg(77), fg(66))('hi')
       ).toEqual(expectedResult)
 
       expect(
-        ColorsWith(style(1), bg(77), fg(66))()('hi')
+        ColorsWith(padEnd(4), style(1))(bg(77), fg(66))('hi')
+      ).toEqual(expectedResult)
+
+      expect(
+        ColorsWith(style(1), padEnd(4), bg(77), fg(66))()('hi')
       ).toEqual(expectedResult)
     })
 

@@ -1,7 +1,8 @@
 const { chain, tap } = require('./common')
 const { map, reduce, flatten } = require('./array')
-const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, bold, eraseLine } = require('./colors')
+const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, padEnd, bold, eraseLine } = require('./colors')
 
+const duration = Colors(padEnd(5))
 const lineItemText = Colors(fg(Gray))
 const statusText = ColorsWith(fg(White), bold)
 const running = statusText(bg(Yellow))(' RUNNING ')
@@ -58,8 +59,8 @@ PerfTestReporter.prototype = {
         const passed = results.filter(r => !r.passed && !r.pending).length === 0
 
         return [`  ${status(passed)} ${description}`, ...results.map(r => {
-          const actualDuration = `${r.duration}`.padEnd(5)
-          const expectedDuration = r.expectedDuration.padEnd(5)
+          const actualDuration = duration(`${r.duration}`)
+          const expectedDuration = duration(r.expectedDuration)
           const durationText = `${actualDuration} < ${expectedDuration} `
           const icon = r.passed ? greenCheck : r.pending ? skippedCheck : redCheck
           const errors = r.passed || r.pending ? '' : `\n${r.errors.join('\n')}\n`

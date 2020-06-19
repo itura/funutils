@@ -1,5 +1,6 @@
 const { chain, repeat, compose, Builder, id } = require('./common')
 const { map } = require('./array')
+const string = require('./string')
 
 // http://ascii-table.com/ansi-escape-sequences.php
 const ESC = '\u{1b}['
@@ -73,6 +74,8 @@ const [Colors, ColorsWith, ColorF] = Builder(Color)
 
 const fg = code => () => ({ fg: code })
 const bg = code => () => ({ bg: code })
+const padStart = n => () => ({ pad: string.padStart(n) })
+const padEnd = n => () => ({ pad: string.padEnd(n) })
 const style = code => () => ({ style: code })
 
 const bold = () => ({ style: styleCodes.Bold })
@@ -112,11 +115,6 @@ const showColors = (text = 'boop') => {
   })
 }
 
-const toFixed = n => x => x.toFixed(n)
-const padEnd = n => x => x.padEnd(n)
-const padStart = n => x => x.padStart(n)
-const toString = x => x.toString()
-
 module.exports = {
   Color,
   Colors,
@@ -136,8 +134,6 @@ module.exports = {
 
   padEnd,
   padStart,
-  toString,
-  toFixed,
 
   ESC,
   eraseLine,
