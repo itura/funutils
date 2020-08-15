@@ -8,39 +8,25 @@ const tap = f => x => {
   return x
 }
 
-const chain = initial => (...fs) =>
+const chain = (...fs) => initial => 
   reduce(
     (result, f) => apply(f)(result),
     initial
   )(fs)
 
 const chainWith = wrapper => initial => (...fs) =>
-  chain(initial)(
+  chain(
     ...map(wrapper)(fs)
-  )
-
-const applyF = F => f =>
-  F.map(f)
-
-const chainF = F => (...fs) =>
-  reduce(
-    (F, f) => applyF(F)(f),
-    F
-  )(fs)
+  )(initial)
 
 const applyP = P => f =>
   P.then(f)
 
-const chainP = init => (...fs) =>
+const chainP = (...fs) => init =>
   reduce(
     (P, f) => applyP(P)(f),
     Promise.resolve(init)
   )(fs)
-
-const fail = e => {
-  console.error(e)
-  process.exit(1)
-}
 
 const applyM = M => f =>
   compose(M.bind(f))(M.unit)
@@ -57,6 +43,21 @@ const composeM = M1 => M2 => {
     unit: M1.unit
   }
 }
+
+const applyF = F => f =>
+  F.map(f)
+
+const chainF = F => (...fs) =>
+  reduce(
+    (F, f) => applyF(F)(f),
+    F
+  )(fs)
+
+const fail = e => {
+  console.error(e)
+  process.exit(1)
+}
+
 
 const _zip = (combo, ...xss) => {
   if (xss.length === 1) {

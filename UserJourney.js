@@ -33,14 +33,14 @@ const UserJourney = (page, onFail, config = {}) => {
   }
 
   const run = () => {
-    return chainP()(
+    return chainP(
       ...steps.map(({ description, action }) =>
         () => action(page).catch(e => {
           log(`Error in "${description}"`)
           onFail(e)
         })
       )
-    )
+    )()
   }
 
   const stepAliases = aliases

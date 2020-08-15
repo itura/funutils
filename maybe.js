@@ -22,6 +22,10 @@ Nothing.prototype = {
   map
 }
 
+const isMaybe = x => x instanceof Just || x instanceof Nothing
+
+const nothing = new Nothing()
+
 const Maybe = x => {
   return isMaybe(x)
     ? x
@@ -29,10 +33,6 @@ const Maybe = x => {
       ? Just(x)
       : nothing
 }
-
-const isMaybe = x => x instanceof Just || x instanceof Nothing
-
-const nothing = new Nothing()
 
 const caseMap = cases => maybe => {
   if (maybe instanceof Just) {

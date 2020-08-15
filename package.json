@@ -36,6 +36,7 @@
     "react-dom": "^16.13.1",
     "react-test-renderer": "^16.13.1",
     "regenerator-runtime": "^0.13.5",
-    "standard": "^14.3.3"
+    "standard": "^14.3.3",
+    "strip-ansi": "^6.0.0"
   }
 }

@@ -5,141 +5,141 @@ const { chain } = require('./common')
 
 describe('Array', () => {
   test('Array.prototype aliases', () => {
-    const data = chain([1, 2, 3])
+    const data = [1, 2, 3]
 
-    expect(data(
+    expect(chain(
       array.concat(4, 5),
       array.concat([6, 7])
-    )).toEqual(
+    )(data)).toEqual(
       [1, 2, 3, 4, 5, 6, 7]
     )
 
-    expect(data(
+    expect(chain(
       array.every(Number.isInteger)
-    )).toEqual(
+    )(data)).toEqual(
       true
     )
 
-    expect(data(
+    expect(chain(
       array.every(x => x === 1)
-    )).toEqual(
+    )(data)).toEqual(
       false
     )
 
-    expect(data(
+    expect(chain(
       array.filter(x => x % 2 === 0)
-    )).toEqual(
+    )(data)).toEqual(
       [2]
     )
 
-    expect(data(
+    expect(chain(
       array.find(x => x * 3 === 6)
-    )).toEqual(
+    )(data)).toEqual(
       2
     )
 
-    expect(data(
+    expect(chain(
       array.findIndex(x => x * 3 === 6)
-    )).toEqual(
+    )(data)).toEqual(
       1
     )
 
-    expect(data(
+    expect(chain(
       array.flatten()
-    )).toEqual(
+    )(data)).toEqual(
       [1, 2, 3]
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => [x, x]),
       array.flatten()
-    )).toEqual(
+    )(data)).toEqual(
       [1, 1, 2, 2, 3, 3]
     )
 
-    expect(data(
+    expect(chain(
       array.includes(3)
-    )).toEqual(
+    )(data)).toEqual(
       true
     )
 
-    expect(data(
+    expect(chain(
       array.indexOf(2)
-    )).toEqual(
+    )(data)).toEqual(
       1
     )
 
-    expect(data(
+    expect(chain(
       array.join('🤓')
-    )).toEqual(
+    )(data)).toEqual(
       '1🤓2🤓3'
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => `${x}🤓 `),
       array.reduce((acc, x) => acc + x)
-    )).toEqual(
+    )(data)).toEqual(
       '1🤓 2🤓 3🤓 '
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => `${x}🤓 `),
       array.reduce((acc, x) => acc + x, 'hi ')
-    )).toEqual(
+    )(data)).toEqual(
       'hi 1🤓 2🤓 3🤓 '
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => `${x}🤓 `),
       array.reduceRight((acc, x) => acc + x)
-    )).toEqual(
+    )(data)).toEqual(
       '3🤓 2🤓 1🤓 '
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => `${x}🤓 `),
       array.reduceRight((acc, x) => acc + x, 'hi ')
-    )).toEqual(
+    )(data)).toEqual(
       'hi 3🤓 2🤓 1🤓 '
     )
 
-    expect(data(
+    expect(chain(
       array.slice(2)
-    )).toEqual(
+    )(data)).toEqual(
       [3]
     )
 
-    expect(data(
+    expect(chain(
       array.slice(0, 2)
-    )).toEqual(
+    )(data)).toEqual(
       [1, 2]
     )
 
-    expect(data(
+    expect(chain(
       array.some(x => x % 2 === 0)
-    )).toEqual(
+    )(data)).toEqual(
       true
     )
 
-    expect(data(
+    expect(chain(
       array.map(x => x % 2 === 0 ? null : x),
       array.compact()
-    )).toEqual(
+    )(data)).toEqual(
       [1, 3]
     )
   })
 
   describe('sort', () => {
     it('sorts with or without a comparator', () => {
-      expect(chain([3, 2, 1])(
+      expect(chain(
         array.sort()
-      )).toEqual(
+      )([3, 2, 1])).toEqual(
         [1, 2, 3]
       )
 
-      expect(chain([1, 2, 3])(
+      expect(chain(
         array.sort((a, b) => b - a)
-      )).toEqual(
+      )([1, 2, 3])).toEqual(
         [3, 2, 1]
       )
     })
@@ -147,9 +147,9 @@ describe('Array', () => {
     it('mutates the array', () => {
       const data = [3, 2, 1]
 
-      expect(chain(data)(
+      expect(chain(
         array.sort()
-      )).toEqual(
+      )(data)).toEqual(
         [1, 2, 3]
       )
 
@@ -158,30 +158,30 @@ describe('Array', () => {
   })
 
   test('handy dandy reducers', () => {
-    const numbers = chain([1, 2, 3])
-    expect(numbers(
+    const numbers = [1, 2, 3]
+    expect(chain(
       array.sum()
-    )).toEqual(
+    )(numbers)).toEqual(
       6
     )
 
-    expect(numbers(
+    expect(chain(
       array.sum(3)
-    )).toEqual(
+    )(numbers)).toEqual(
       9
     )
 
-    expect(numbers(
+    expect(chain(
       array.map(x => `${x}!`),
       array.buildLines()
-    )).toEqual(
+    )(numbers)).toEqual(
       '1!\n2!\n3!'
     )
 
-    expect(numbers(
+    expect(chain(
       array.map(x => `${x}!`),
       array.buildLines('hi')
-    )).toEqual(
+    )(numbers)).toEqual(
       'hi\n1!\n2!\n3!'
     )
   })
@@ -190,9 +190,9 @@ describe('Array', () => {
     it('mutates the array', () => {
       const data = [1, 2, 3]
 
-      expect(chain(data)(
+      expect(chain(
         array.reverse()
-      )).toEqual(
+      )(data)).toEqual(
         [3, 2, 1]
       )
 

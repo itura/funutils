@@ -28,7 +28,7 @@ PerfTestReporter.prototype = {
     process.stdout.write(`${eraseLine}\r`)
     console.log(`${status(passed)} Performance Report (${totalDuration.toFixed(0)} ms)`)
 
-    chain(fileResults.testResults)(
+    chain(
       reduce(
         (acc, r) => {
           const describes = r.ancestorTitles.join(' ')
@@ -72,7 +72,7 @@ PerfTestReporter.prototype = {
       flatten(),
 
       tap(lines => lines.forEach(line => console.log(line)))
-    )
+    )(fileResults.testResults)
   }
 }
 

@@ -50,7 +50,7 @@ const Color = (config = {}) => {
   const style = config.style
   const pad = config.pad || id
 
-  const withPad = (...fs) => chain(pad)(...map(compose)(fs))
+  const withPad = (...fs) => chain(...map(compose)(fs))(pad)
 
   if (fg !== undefined && bg !== undefined) {
     return withPad(

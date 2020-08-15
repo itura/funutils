@@ -8,7 +8,7 @@ describe('funutils', () => {
       const { map, filter, flatten, compact, reduce } = funutils.array
 
       expect(
-        funutils.chain([1, 2, 3])(
+        funutils.chain(
           map(x => x + 1),
           filter(x => x % 2 === 1),
           map(x => [x, null]),
@@ -18,7 +18,7 @@ describe('funutils', () => {
             (acc, x) => acc + (x === null ? 2 : x),
             0
           )
-        )
+        )([1, 2, 3])
       ).toEqual(3)
     })
 
@@ -48,10 +48,13 @@ describe('funutils', () => {
     })
 
     test('chainP', () => {
-      return funutils.chainP(Promise.resolve(1))(
+      const stripAnsi = require('strip-ansi')
+      return funutils.chainP(
         x => Promise.resolve(x + 2),
-        r => expect(r).toEqual(3)
-      )
+        r => expect(r).toEqual(3),
+        r => expect(r).toBeDefined()
+      )(1)
+        .catch(e => expect(stripAnsi(e.message)).toContain('Received: undefined'))
     })
 
     test('misc', () => {
@@ -234,19 +237,19 @@ describe('funutils', () => {
     const { array, string } = funutils
 
     expect(
-      funutils.chain('hi!')(
+      funutils.chain(
         string.repeat(4),
         string.split('!'),
-        ss => funutils.chain(ss)(
+        funutils.chain(
           array.filter(string.includes('hi')),
           array.filter(string.match(/hi/)),
-          array.map(s => funutils.chain(s)(
+          array.map(funutils.chain(
             string.toUpperCase(),
             string.padEnd(4)
           )),
           array.join('!')
         )
-      )
+      )('hi!')
     ).toEqual(
       'HI  !HI  !HI  !HI  '
     )

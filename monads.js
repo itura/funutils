@@ -32,11 +32,11 @@ const SequenceMonad = (...operations) => {
     unit: x => [x],
     bind: f => seqCaseMap({
       one: apply(f),
-      many: xs => chain(xs)(
+      many: xs => chain(
         map(apply(f)),
         ...operations,
         flatten()
-      )
+      )(xs)
     })
   }
 }
