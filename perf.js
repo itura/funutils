@@ -1,10 +1,4 @@
-// ES6 Performance interface is provided differently based on environment:
-// - browser: `performance` global
-// - node: `perf_hooks.performance`
-//  - may eventually be available under `global.performance` https://github.com/nodejs/node/issues/28635
-
-// eslint-disable-next-line
-const p = typeof performance === 'undefined' ? require('perf_hooks').performance : performance
+const p = global.performance
 
 const time = async (action) => {
   const t0 = p.now()
