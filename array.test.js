@@ -127,6 +127,12 @@ describe('Array', () => {
     )(data)).toEqual(
       [1, 3]
     )
+
+    expect(chain(
+      array.reverse()
+    )(data)).toEqual(
+      [3, 2, 1]
+    )
   })
 
   describe('sort', () => {
@@ -142,18 +148,6 @@ describe('Array', () => {
       )([1, 2, 3])).toEqual(
         [3, 2, 1]
       )
-    })
-
-    it('mutates the array', () => {
-      const data = [3, 2, 1]
-
-      expect(chain(
-        array.sort()
-      )(data)).toEqual(
-        [1, 2, 3]
-      )
-
-      expect(data).toEqual([1, 2, 3])
     })
   })
 
@@ -184,19 +178,5 @@ describe('Array', () => {
     )(numbers)).toEqual(
       'hi\n1!\n2!\n3!'
     )
-  })
-
-  describe('reverse', () => {
-    it('mutates the array', () => {
-      const data = [1, 2, 3]
-
-      expect(chain(
-        array.reverse()
-      )(data)).toEqual(
-        [3, 2, 1]
-      )
-
-      expect(data).toEqual([3, 2, 1])
-    })
   })
 })

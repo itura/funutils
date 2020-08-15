@@ -21,10 +21,10 @@ module.exports = {
     initial
       ? a.reduceRight(f, initial)
       : a.reduceRight(f),
-  reverse: () => a => a.reverse(),
+  reverse: () => a => [...a].reverse(),
   slice: (start, end) => a => a.slice(start, end),
   some: f => a => a.some(f),
-  sort: f => a => a.sort(f),
+  sort: f => a => [...a].sort(f),
 
   compact: () => a => a.filter(x => x || x === 0),
 
