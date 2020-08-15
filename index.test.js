@@ -36,7 +36,7 @@ describe('funutils', () => {
         )
       ).toEqual(['hi!hi!'])
 
-      const { Maybe, Just, Nothing } = funutils.Maybe
+      const { Maybe, Just, Nothing } = funutils.maybe
       const fun = x => `${x}!`
       expect(
         funutils.chainF(Maybe(null))(fun, fun)
@@ -81,7 +81,7 @@ describe('funutils', () => {
   })
 
   test('Maybe', () => {
-    const { Maybe, Just, Nothing } = funutils.Maybe
+    const { Maybe, Just, Nothing } = funutils.maybe
     expect(Maybe('hi')).toEqual(Just('hi'))
     expect(Maybe(null)).toEqual(Nothing)
     expect(
@@ -155,7 +155,7 @@ describe('funutils', () => {
 
     expect(
       funutils.chainM(m1)(id)(data)
-    ).toEqual([1, 2, funutils.Maybe.Nothing, 4, 5])
+    ).toEqual([1, 2, funutils.maybe.Nothing, 4, 5])
 
     expect(
       funutils.chainM(m2)(id)(data)

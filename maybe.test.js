@@ -1,26 +1,26 @@
 /* eslint-env jest */
 
-const Maybe = require('./maybe')
+const maybe = require('./maybe')
 const { compose } = require('./common')
 
-describe('Maybe', () => {
+describe('maybe', () => {
   it('do', () => {
-    const nothing = Maybe.Nothing
-    const just = Maybe.Just('hi')
+    const nothing = maybe.Nothing
+    const just = maybe.Just('hi')
     const id = x => x
 
-    expect(nothing.map(id)).toStrictEqual(Maybe.Nothing)
-    expect(just.map(id)).toStrictEqual(Maybe.Just('hi'))
+    expect(nothing.map(id)).toStrictEqual(maybe.Nothing)
+    expect(just.map(id)).toStrictEqual(maybe.Just('hi'))
 
-    expect(Maybe.Maybe('hi')).toEqual(Maybe.Just('hi'))
-    expect(Maybe.Maybe([])).toEqual(Maybe.Just([]))
-    expect(Maybe.Maybe(null)).toEqual(Maybe.Nothing)
-    expect(Maybe.Maybe(undefined)).toEqual(Maybe.Nothing)
+    expect(maybe.Maybe('hi')).toEqual(maybe.Just('hi'))
+    expect(maybe.Maybe([])).toEqual(maybe.Just([]))
+    expect(maybe.Maybe(null)).toEqual(maybe.Nothing)
+    expect(maybe.Maybe(undefined)).toEqual(maybe.Nothing)
   })
 
   it('is a functor', () => {
-    const just = Maybe.Just(8)
-    const nothing = Maybe.Nothing
+    const just = maybe.Just(8)
+    const nothing = maybe.Nothing
     const g = x => x - 9
     const f = x => x * 2
 
