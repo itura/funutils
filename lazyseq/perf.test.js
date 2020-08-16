@@ -48,7 +48,7 @@ describe('LazySeq', () => {
   })
 
   describe('with normal reduce', () => {
-    perfTest('fireAndForget', 2100,
+    perfTest('fireAndForget', 2400,
       () => LazySeq()
         .map(x => x + 1)
         .map(insertToDb)
@@ -60,7 +60,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('fireAndForget with filter', 500,
+    perfTest('fireAndForget with filter', 600,
       () => LazySeq()
         .map(x => x + 1)
         .filter(x => x % 2 === 0)
@@ -73,7 +73,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAll', 5700,
+    perfTest('collectAll', 6200,
       () => LazySeq()
         .map(x => x + 1)
         .map(insertToDb)
@@ -85,7 +85,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAll with filter', 2000,
+    perfTest('collectAll with filter', 2200,
       () => LazySeq()
         .map(x => x + 1)
         .filter(x => x % 2 === 0)
@@ -98,7 +98,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAllFast', 2400,
+    perfTest('collectAllFast', 2600,
       () => LazySeq()
         .map(x => x + 1)
         .map(insertToDb)
@@ -110,7 +110,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAllFast with filter', 500,
+    perfTest('collectAllFast with filter', 600,
       () => LazySeq()
         .map(x => x + 1)
         .filter(x => x % 2 === 0)
@@ -150,7 +150,7 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAll', 3600,
+    perfTest('collectAll', 3800,
       () => LazySeq()
         .map(x => x + 1)
         .map(insertToDb)
@@ -246,7 +246,7 @@ const suiteFor = (name, monad) => {
     })
 
     describe('with lazy reduce', () => {
-      perfTest('fireAndForget', 100,
+      perfTest('fireAndForget', 150,
         () => LazySeqM(monad)
           .map(x => [x + 1, x + 2])
           .map(insertToDb)
@@ -258,7 +258,7 @@ const suiteFor = (name, monad) => {
         }
       )
 
-      perfTest('collectAll', 3700,
+      perfTest('collectAll', 3900,
         () => LazySeqM(monad)
           .map(x => [x + 1, x + 2])
           .map(insertToDb)
@@ -270,7 +270,7 @@ const suiteFor = (name, monad) => {
         }
       )
 
-      perfTest('collectAllFast', 100,
+      perfTest('collectAllFast', 150,
         () => LazySeqM(monad)
           .map(x => [x + 1, x + 2])
           .map(insertToDb)
