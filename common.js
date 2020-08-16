@@ -1,4 +1,4 @@
-const { map, reduce } = require('./array')
+const { reduce } = require('./array')
 
 const id = x => x
 const apply = f => x => f(x)
@@ -13,11 +13,6 @@ const chain = (...fs) => initial =>
     (result, f) => apply(f)(result),
     initial
   )(fs)
-
-const chainWith = wrapper => initial => (...fs) =>
-  chain(
-    ...map(wrapper)(fs)
-  )(initial)
 
 const applyP = P => f =>
   P.then(f)
@@ -99,7 +94,6 @@ const Builder = factory => {
 module.exports = {
   apply,
   chain,
-  chainWith,
   applyF,
   chainF,
   applyP,

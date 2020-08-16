@@ -1,4 +1,4 @@
-const { chain, repeat, compose, Builder, id } = require('./common')
+const { chain, repeat, Builder, id } = require('./common')
 const { map } = require('./array')
 const string = require('./string')
 
@@ -50,7 +50,7 @@ const Color = (config = {}) => {
   const style = config.style
   const pad = config.pad || id
 
-  const withPad = (...fs) => chain(...map(compose)(fs))(pad)
+  const withPad = (...fs) => chain(pad, ...fs)
 
   if (fg !== undefined && bg !== undefined) {
     return withPad(

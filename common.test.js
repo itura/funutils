@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { chainP, chainWith, compose, id, zip, randomInt, repeat } = require('./common')
+const { chainP, zip, randomInt, repeat } = require('./common')
 
 test('common', () => {
   const one = [1, 2]
@@ -31,37 +31,6 @@ test('common', () => {
   repeat(50, () => expect(randomInt(5, 1)).toBeLessThan(6))
 
   expect(repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
-})
-
-describe('chainWith', () => {
-  it('do', () => {
-    const composeMany = chainWith(compose)
-
-    expect(composeMany(id)(id, id)('hi')).toEqual('hi')
-
-    const emphasize = composeMany(x => `${x}!`)
-
-    expect(
-      emphasize()('hi')
-    ).toEqual(
-      'hi!'
-    )
-
-    expect(
-      emphasize(x => `${x}?`)('hi')
-    ).toEqual(
-      'hi!?'
-    )
-
-    expect(
-      emphasize(
-        x => `${x}?`,
-        x => x.toUpperCase()
-      )('hi')
-    ).toEqual(
-      'HI!?'
-    )
-  })
 })
 
 describe('chainP', () => {
