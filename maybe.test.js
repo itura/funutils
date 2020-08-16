@@ -12,10 +12,10 @@ describe('maybe', () => {
     expect(nothing.map(id)).toStrictEqual(maybe.Nothing)
     expect(just.map(id)).toStrictEqual(maybe.Just('hi'))
 
-    expect(maybe.Maybe('hi')).toEqual(maybe.Just('hi'))
-    expect(maybe.Maybe([])).toEqual(maybe.Just([]))
-    expect(maybe.Maybe(null)).toEqual(maybe.Nothing)
-    expect(maybe.Maybe(undefined)).toEqual(maybe.Nothing)
+    expect(maybe.Maybe('hi')).toStrictEqual(maybe.Just('hi'))
+    expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
+    expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing)
+    expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing)
   })
 
   it('is a functor', () => {
@@ -28,5 +28,45 @@ describe('maybe', () => {
       .toStrictEqual(just.map(g).map(f))
     expect(nothing.map(compose(f)(g)))
       .toStrictEqual(nothing.map(g).map(f))
+  })
+
+  const m1 = maybe.Just('hi')
+  const m2 = maybe.Just('there')
+  const m3 = maybe.Nothing
+
+  describe('given', () => {
+    it('applies the function when all Maybes are Justs', () => {
+      expect(
+        maybe.given(m1, m2)((v1, v2) => `${v1} ${v2}`)
+      ).toEqual(
+        maybe.Just('hi there')
+      )
+    })
+
+    it('returns Nothing when any Maybe is Nothing', () => {
+      expect(
+        maybe.given(m1, m2, m3)(() => 'hi there')
+      ).toEqual(
+        maybe.Nothing
+      )
+    })
+  })
+
+  describe('none', () => {
+    it('applies the function when all Maybes are Nothing', () => {
+      expect(
+        maybe.none(m3, maybe.Nothing)(() => 'hi there')
+      ).toEqual(
+        maybe.Just('hi there')
+      )
+    })
+
+    it('returns Nothing when any Maybe is Just', () => {
+      expect(
+        maybe.none(m3, m2, maybe.Nothing)(() => 'hi there')
+      ).toEqual(
+        maybe.Nothing
+      )
+    })
   })
 })

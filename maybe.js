@@ -1,3 +1,4 @@
+const { id } = require('./common')
 
 const map = function (f) {
   return caseMap({
@@ -40,10 +41,38 @@ const caseMap = cases => maybe => {
   }
 
   if (maybe instanceof Nothing) {
-    return cases.nothing()
+    return cases.nothing ? cases.nothing() : nothing
   }
 
-  throw new TypeError(`Not a Maybe: ${maybe}`)
+  throw new TypeError(`Not a Maybe: '${maybe}'`)
+}
+
+const given = (...ms) => f => {
+  const maybeArgs = ms.reduce(
+    (maybeArgs, m) => caseMap({
+      just: v => maybeArgs.map(args => args.concat(v))
+    })(m),
+    Just([])
+  )
+
+  return caseMap({
+    just: args => Just(f(...args))
+  })(maybeArgs)
+}
+
+const none = (...ms) => f => {
+  const maybeArgs = ms.reduce(
+    (maybeArgs, m) => caseMap({
+      just: () => m,
+      nothing: () => maybeArgs.map(id)
+    })(m),
+    nothing
+  )
+
+  return caseMap({
+    just: () => nothing,
+    nothing: () => Just(f())
+  })(maybeArgs)
 }
 
 module.exports = {
@@ -51,5 +80,7 @@ module.exports = {
   Nothing: nothing,
   caseMap,
   isMaybe,
-  Maybe
+  Maybe,
+  given,
+  none
 }
