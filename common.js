@@ -8,7 +8,7 @@ const tap = f => x => {
   return x
 }
 
-const chain = (...fs) => initial => 
+const chain = (...fs) => initial =>
   reduce(
     (result, f) => apply(f)(result),
     initial
@@ -57,7 +57,6 @@ const fail = e => {
   console.error(e)
   process.exit(1)
 }
-
 
 const _zip = (combo, ...xss) => {
   if (xss.length === 1) {
