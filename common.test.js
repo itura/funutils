@@ -1,6 +1,6 @@
 /* eslint-env jest */
 
-const { chainP, zip, randomInt, repeat } = require('./common')
+const { chainP, zip, randomInt, repeat, Builder } = require('./common')
 
 test('common', () => {
   const one = [1, 2]
@@ -45,6 +45,40 @@ describe('chainP', () => {
 
     await chainP(Promise.resolve('hi'))(
       x => expect(x).toEqual('hi')
+    )
+  })
+})
+
+describe('Builder', () => {
+  it('accumulates a config object for a function', () => {
+    const factory = config => value => `${value} ${config.one} ${config.two}`
+
+    const build = Builder(factory)
+
+    expect(
+      build(
+        () => ({ one: 'one', two: 'two' })
+      )('hi')
+    ).toEqual(
+      'hi one two'
+    )
+
+    expect(
+      build(
+        () => ({ one: 'one' }),
+        () => ({ two: 'two' })
+      )('hi')
+    ).toEqual(
+      'hi one two'
+    )
+
+    expect(
+      build(
+        () => ({ one: 'one' }),
+        config => ({ two: config.one.toUpperCase() })
+      )('hi')
+    ).toEqual(
+      'hi one ONE'
     )
   })
 })

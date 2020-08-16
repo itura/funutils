@@ -66,19 +66,31 @@ describe('funutils', () => {
 
       expect(funutils.repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 
-      const [build] = funutils.Builder(config => value => [config, value])
+      const builder = funutils.Builder(config => value => [config, value])
+      const built = builder(
+        config => ({ beep: 'MEEP' }),
+        config => ({ beep: config.beep + '!' }),
+        config => ({ boop: 'BOOP' })
+      )
+
       expect(
-        build(
-          config => ({ beep: 'MEEP' }),
-          config => ({ beep: config.beep + '!' }),
-          config => ({ boop: 'BOOP' })
-        )('hi')
+        built('hi')
       ).toEqual([
         {
           beep: 'MEEP!',
           boop: 'BOOP'
         },
         'hi'
+      ])
+
+      expect(
+        built('bye')
+      ).toEqual([
+        {
+          beep: 'MEEP!',
+          boop: 'BOOP'
+        },
+        'bye'
       ])
     })
   })

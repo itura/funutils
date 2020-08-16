@@ -1,6 +1,5 @@
 /* eslint-env jest */
 
-const { chainF } = require('./common')
 const colors = require('./colors')
 const string = require('./string')
 
@@ -125,121 +124,41 @@ describe('colors', () => {
     })
   })
 
-  describe('ColorF, Colors, ColorsWith', () => {
-    const { ColorF, Colors, ColorsWith, fg, bg, style, padStart, padEnd } = colors
+  describe('Colors, ColorsWith', () => {
+    const { Colors, ColorsWith, fg, bg, style, padStart, padEnd } = colors
 
     it('does nothing with no mappings', () => {
-      const expectedResult = 'hi'
-
-      expect(
-        ColorF().apply('hi')
-      ).toEqual(expectedResult)
-
       expect(
         Colors()('hi')
-      ).toEqual(expectedResult)
+      ).toEqual('hi')
     })
 
     it('sets the foreground', () => {
-      const expectedResult = `${ESC}38;5;77mhi${ESC}0m`
-
-      expect(
-        ColorF()
-          .map(() => ({ fg: 77 }))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
-      expect(
-        ColorF()
-          .map(fg(77))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
       expect(
         Colors(fg(77))('hi')
-      ).toEqual(expectedResult)
+      ).toEqual(`${ESC}38;5;77mhi${ESC}0m`)
     })
 
     it('sets the background', () => {
-      const expectedResult = `${ESC}48;5;77mhi${ESC}0m`
-
-      expect(
-        ColorF()
-          .map(() => ({ bg: 77 }))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
-      expect(
-        ColorF()
-          .map(bg(77))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
       expect(
         Colors(bg(77))('hi')
-      ).toEqual(expectedResult)
+      ).toEqual(`${ESC}48;5;77mhi${ESC}0m`)
     })
 
     it('sets the style', () => {
-      const expectedResult = `${ESC}1mhi${ESC}0m`
-
-      expect(
-        ColorF()
-          .map(() => ({ style: 1 }))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
-      expect(
-        ColorF()
-          .map(style(1))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
       expect(
         Colors(style(1))('hi')
-      ).toEqual(expectedResult)
+      ).toEqual(`${ESC}1mhi${ESC}0m`)
     })
 
     it('sets the padding', () => {
-      const expectedResult = '  hi'
-
-      expect(
-        ColorF()
-          .map(() => ({ pad: string.padStart(4) }))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
-      expect(
-        ColorF()
-          .map(padStart(4))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
       expect(
         Colors(padStart(4))('hi')
-      ).toEqual(expectedResult)
+      ).toEqual('  hi')
     })
 
     it('sets all attributes', () => {
       const expectedResult = `${ESC}1;38;5;66m${ESC}48;5;77mhi  ${ESC}0m${ESC}0m`
-
-      expect(
-        ColorF()
-          .map(fg(66))
-          .map(bg(77))
-          .map(style(1))
-          .map(padEnd(4))
-          .apply('hi')
-      ).toEqual(expectedResult)
-
-      expect(
-        chainF(ColorF())(
-          fg(66),
-          bg(77),
-          style(1),
-          padEnd(4)
-        ).apply('hi')
-      ).toEqual(expectedResult)
 
       expect(
         Colors(fg(66), bg(77), style(1), padEnd(4))('hi')

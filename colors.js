@@ -70,7 +70,8 @@ const Color = (config = {}) => {
   return withPad(_plain({ style }))
 }
 
-const [Colors, ColorsWith, ColorF] = Builder(Color)
+const Colors = Builder(Color)
+const ColorsWith = (...fs) => (...gs) => Colors(...fs, ...gs)
 
 const fg = code => () => ({ fg: code })
 const bg = code => () => ({ bg: code })
@@ -119,7 +120,6 @@ module.exports = {
   Color,
   Colors,
   ColorsWith,
-  ColorF,
 
   fg,
   bg,

@@ -1,4 +1,4 @@
-const { reduce } = require('./array')
+const { map, reduce } = require('./array')
 
 const id = x => x
 const apply = f => x => f(x)
@@ -76,20 +76,11 @@ const repeat = (count, fn) =>
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
-const Builder = factory => {
-  const BuilderF = (config = {}) => ({
-    map: f => BuilderF({ ...config, ...f(config) }),
-    apply: v => factory(config)(v)
-  })
-
-  const build = (...fs) =>
-    chainF(BuilderF())(...fs).apply
-
-  const buildWith = (...fs) => (...gs) =>
-    chainF(BuilderF())(...fs, ...gs).apply
-
-  return [build, buildWith, BuilderF]
-}
+const Builder = factory =>
+  (...fs) => chain(
+    ...map(f => config => ({ ...config, ...f(config) }))(fs),
+    factory
+  )(id)
 
 module.exports = {
   apply,
