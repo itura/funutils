@@ -28,6 +28,8 @@ describe('maybe', () => {
       .toStrictEqual(just.map(g).map(f))
     expect(nothing.map(compose(f)(g)))
       .toStrictEqual(nothing.map(g).map(f))
+    expect(just.map(() => undefined)).toStrictEqual(maybe.Nothing)
+    expect(just.map(x => x + 1)).toStrictEqual(maybe.Just(9))
   })
 
   const m1 = maybe.Just('hi')
@@ -67,6 +69,24 @@ describe('maybe', () => {
       ).toEqual(
         maybe.Nothing
       )
+    })
+  })
+
+  describe('cases', () => {
+    it('executes the effect of the first true condition', () => {
+      expect(maybe.cases(
+        [false, () => 1],
+        [true, () => 2],
+        [true, () => 3]
+      )).toEqual(maybe.Just(2))
+    })
+
+    it('returns Nothing when none of the cases are true', () => {
+      expect(maybe.cases(
+        [false, () => 1],
+        [false, () => 2],
+        [false, () => 3]
+      )).toEqual(maybe.Nothing)
     })
   })
 })

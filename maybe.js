@@ -3,7 +3,7 @@ const { id } = require('./common')
 const map = function (f) {
   return caseMap({
     nothing: () => nothing,
-    just: value => Just(f(value))
+    just: value => Maybe(f(value))
   })(this)
 }
 const Just = function (value) {
@@ -75,6 +75,15 @@ const none = (...ms) => f => {
   })(maybeArgs)
 }
 
+const cases = (...specs) =>
+  specs.reduce(
+    (result, [condition, effect]) => caseMap({
+      just: Maybe,
+      nothing: () => Maybe(condition && effect())
+    })(result),
+    nothing
+  )
+
 module.exports = {
   Just,
   Nothing: nothing,
@@ -82,5 +91,6 @@ module.exports = {
   isMaybe,
   Maybe,
   given,
-  none
+  none,
+  cases
 }
