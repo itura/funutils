@@ -6,6 +6,11 @@ const map = function (f) {
     just: value => Maybe(f(value))
   })(this)
 }
+
+const caseMapMethod = function (cases) {
+  return caseMap(cases)(this)
+}
+
 const Just = function (value) {
   if (!(this instanceof Just)) {
     return new Just(value)
@@ -14,13 +19,15 @@ const Just = function (value) {
   this.value = value
 }
 Just.prototype = {
-  map
+  map,
+  caseMap: caseMapMethod
 }
 
 const Nothing = function () {
 }
 Nothing.prototype = {
-  map
+  map,
+  caseMap: caseMapMethod
 }
 
 const isMaybe = x => x instanceof Just || x instanceof Nothing

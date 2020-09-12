@@ -16,6 +16,16 @@ describe('maybe', () => {
     expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
     expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing)
     expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing)
+
+    expect(just.caseMap({
+      just: v => v + '!',
+      nothing: () => 'bye'
+    })).toEqual('hi!')
+
+    expect(nothing.caseMap({
+      just: v => v + '!',
+      nothing: () => 'bye'
+    })).toEqual('bye')
   })
 
   it('is a functor', () => {
@@ -30,6 +40,7 @@ describe('maybe', () => {
       .toStrictEqual(nothing.map(g).map(f))
     expect(just.map(() => undefined)).toStrictEqual(maybe.Nothing)
     expect(just.map(x => x + 1)).toStrictEqual(maybe.Just(9))
+    expect(just.map(x => maybe.Just(x + 1))).toStrictEqual(maybe.Just(9))
   })
 
   const m1 = maybe.Just('hi')
