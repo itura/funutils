@@ -1,8 +1,11 @@
 
-const reduce = (f, initial) => a =>
-  initial
-    ? a.reduce(f, initial)
-    : a.reduce(f)
+const reduce = function (f, initial) {
+  return a =>
+    arguments.length > 1
+      ? a.reduce(f, initial)
+      : a.reduce(f)
+}
+const join = x => a => a.join(x)
 
 module.exports = {
   concat: (...a2) => a1 => a1.concat(...a2),
@@ -13,7 +16,7 @@ module.exports = {
   flatten: (n = 1) => a => a.flat(n),
   includes: x => a => a.includes(x),
   indexOf: x => a => a.indexOf(x),
-  join: x => a => a.join(x),
+  join,
   lastIndexOf: x => a => a.lastIndexOf(x),
   map: f => a => a.map(f),
   reduce,
@@ -29,6 +32,8 @@ module.exports = {
   compact: () => a => a.filter(x => x || x === 0),
 
   sum: (init = 0) => reduce((acc, x) => acc + x, init),
-  buildLines: (init = '') => reduce((acc, x) => acc + '\n' + x, init)
+  buildLines: (init) => init
+    ? reduce((acc, x) => acc + '\n' + x, init)
+    : join('\n')
 
 }

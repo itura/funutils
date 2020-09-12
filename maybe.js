@@ -1,3 +1,4 @@
+const { reduce } = require('./array')
 const { id } = require('./common')
 
 const map = function (f) {
@@ -24,6 +25,9 @@ Just.prototype = {
 }
 
 const Nothing = function () {
+  if (!(this instanceof Nothing)) {
+    return new Nothing()
+  }
 }
 Nothing.prototype = {
   map,
@@ -44,7 +48,7 @@ const Maybe = x => {
 
 const caseMap = cases => maybe => {
   if (maybe instanceof Just) {
-    return cases.just(maybe.value)
+    return cases.just ? cases.just(maybe.value) : maybe.value
   }
 
   if (maybe instanceof Nothing) {
@@ -55,12 +59,12 @@ const caseMap = cases => maybe => {
 }
 
 const given = (...ms) => f => {
-  const maybeArgs = ms.reduce(
+  const maybeArgs = reduce(
     (maybeArgs, m) => caseMap({
       just: v => maybeArgs.map(args => args.concat(v))
     })(m),
     Just([])
-  )
+  )(ms)
 
   return caseMap({
     just: args => Just(f(...args))
@@ -68,13 +72,13 @@ const given = (...ms) => f => {
 }
 
 const none = (...ms) => f => {
-  const maybeArgs = ms.reduce(
+  const maybeArgs = reduce(
     (maybeArgs, m) => caseMap({
       just: () => m,
       nothing: () => maybeArgs.map(id)
     })(m),
     nothing
-  )
+  )(ms)
 
   return caseMap({
     just: () => nothing,
@@ -83,17 +87,17 @@ const none = (...ms) => f => {
 }
 
 const cases = (...specs) =>
-  specs.reduce(
+  reduce(
     (result, [condition, effect]) => caseMap({
       just: Maybe,
       nothing: () => Maybe(condition && effect())
     })(result),
     nothing
-  )
+  )(specs)
 
 module.exports = {
   Just,
-  Nothing: nothing,
+  Nothing,
   caseMap,
   isMaybe,
   Maybe,

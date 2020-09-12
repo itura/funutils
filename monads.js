@@ -1,6 +1,6 @@
 const { apply, composeM, id, chain } = require('./common')
 const { map, flatten, filter } = require('./array')
-const { Nothing, caseMap, Maybe } = require('./maybe')
+const { caseMap, Maybe } = require('./maybe')
 
 const IdMonad = {
   bind: f => Mx => f(Mx),
@@ -10,7 +10,6 @@ const IdMonad = {
 const MaybeMonad = {
   unit: Maybe,
   bind: f => caseMap({
-    nothing: () => Nothing,
     just: apply(f)
   })
 }
@@ -41,7 +40,17 @@ const SequenceMonad = (...operations) => {
   }
 }
 
-const NotNothingMonad = SequenceMonad(filter(x => x !== Nothing))
+const NotNothingMonad = SequenceMonad(
+  filter(chain(
+    x => {
+      return Maybe(x)
+    },
+    caseMap({
+      just: () => true,
+      nothing: () => false
+    })
+  ))
+)
 const SomethingMonad = composeM(NotNothingMonad)(MaybeMonad)
 
 module.exports = {

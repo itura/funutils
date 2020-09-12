@@ -27,10 +27,10 @@ const applyM = M => f =>
   compose(M.bind(f))(M.unit)
 
 const chainM = M => (...fs) => initial =>
-  fs.reduce(
+  reduce(
     (prev, f) => applyM(M)(f)(prev),
     initial
-  )
+  )(fs)
 
 const composeM = M1 => M2 => {
   return {

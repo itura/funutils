@@ -40,7 +40,7 @@ describe('funutils', () => {
       const fun = x => `${x}!`
       expect(
         funutils.chainF(Maybe(null))(fun, fun)
-      ).toStrictEqual(Nothing)
+      ).toStrictEqual(Nothing())
 
       expect(
         funutils.chainF(Maybe('hi'))(fun, fun)
@@ -98,13 +98,13 @@ describe('funutils', () => {
   test('Maybe', () => {
     const { Maybe, Just, Nothing } = funutils.maybe
     expect(Maybe('hi')).toEqual(Just('hi'))
-    expect(Maybe(null)).toEqual(Nothing)
+    expect(Maybe(null)).toEqual(Nothing())
     expect(
       Just('hi').map(funutils.id)
     ).toEqual(Just('hi'))
     expect(
-      Nothing.map(funutils.id)
-    ).toEqual(Nothing)
+      Nothing().map(funutils.id)
+    ).toEqual(Nothing())
   })
 
   test('LazySeq', () => {
@@ -170,7 +170,7 @@ describe('funutils', () => {
 
     expect(
       funutils.chainM(m1)(id)(data)
-    ).toEqual([1, 2, funutils.maybe.Nothing, 4, 5])
+    ).toEqual([1, 2, funutils.maybe.Nothing(), 4, 5])
 
     expect(
       funutils.chainM(m2)(id)(data)

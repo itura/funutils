@@ -1,6 +1,7 @@
 /* eslint-env jest */
 
-const { chainP, zip, randomInt, repeat, Builder } = require('./common')
+const monads = require('./monads')
+const { chain, chainM, id, chainP, zip, randomInt, repeat, Builder } = require('./common')
 
 test('common', () => {
   const one = [1, 2]
@@ -33,20 +34,28 @@ test('common', () => {
   expect(repeat(3, i => `${i}!`)).toEqual(['0!', '1!', '2!'])
 })
 
-describe('chainP', () => {
-  test('default chainP', async () => {
-    await chainP()(
-      x => expect(x).toEqual(undefined)
-    )
+test('chainP', async () => {
+  await chainP()(
+    x => expect(x).toEqual(undefined)
+  )
 
-    await chainP('hi')(
-      x => expect(x).toEqual('hi')
-    )
+  await chainP('hi')(
+    x => expect(x).toEqual('hi')
+  )
 
-    await chainP(Promise.resolve('hi'))(
-      x => expect(x).toEqual('hi')
-    )
-  })
+  await chainP(Promise.resolve('hi'))(
+    x => expect(x).toEqual('hi')
+  )
+})
+
+test('chain', () => {
+  chain(id, x => expect(x).toBeUndefined())()
+  chain(id, x => expect(x).toBeNull())(null)
+})
+
+test('chainM', () => {
+  chainM(monads.Id)(id, x => expect(x).toBeUndefined())()
+  chainM(monads.Id)(id, x => expect(x).toBeNull())(null)
 })
 
 describe('Builder', () => {

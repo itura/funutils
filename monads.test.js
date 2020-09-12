@@ -12,10 +12,10 @@ describe('Maybe', () => {
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
 
-    expect(result(Nothing)).toEqual(Nothing)
-    expect(result(null)).toEqual(Nothing)
-    expect(result(undefined)).toEqual(Nothing)
-    expect(result('')).toEqual(Nothing)
+    expect(result(Nothing())).toEqual(Nothing())
+    expect(result(null)).toEqual(Nothing())
+    expect(result(undefined)).toEqual(Nothing())
+    expect(result('')).toEqual(Nothing())
   })
 
   it('safely chains functions', () => {
@@ -27,10 +27,10 @@ describe('Maybe', () => {
     expect(result(0)).toEqual('0')
     expect(result([])).toEqual('')
 
-    expect(result(Nothing)).toEqual(Nothing)
-    expect(result(null)).toEqual(Nothing)
-    expect(result(undefined)).toEqual(Nothing)
-    expect(result('')).toEqual(Nothing)
+    expect(result(Nothing())).toEqual(Nothing())
+    expect(result(null)).toEqual(Nothing())
+    expect(result(undefined)).toEqual(Nothing())
+    expect(result('')).toEqual(Nothing())
   })
 
   it('monad law 1', () => {
@@ -41,8 +41,8 @@ describe('Maybe', () => {
     const rhs = f
 
     expect(lhs(1)).toEqual(rhs(1))
-    expect(lhs(null)).toEqual(rhs(Nothing)) // ?
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(null)).toEqual(rhs(Nothing())) // ?
+    expect(lhs(Nothing())).toEqual(rhs(Nothing()))
   })
 
   it('monad law 2', () => {
@@ -52,8 +52,8 @@ describe('Maybe', () => {
     const rhs = id
 
     expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
-    expect(lhs(Maybe(null))).toEqual(rhs(Nothing)) // ?
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(Maybe(null))).toEqual(rhs(Nothing())) // ?
+    expect(lhs(Nothing())).toEqual(rhs(Nothing()))
   })
 
   it('monad law 3', () => {
@@ -64,8 +64,8 @@ describe('Maybe', () => {
     const rhs = bind(compose(bind(g))(f))
 
     expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
-    expect(lhs(Maybe(null))).toEqual(rhs(Nothing)) // ?
-    expect(lhs(Nothing)).toEqual(rhs(Nothing))
+    expect(lhs(Maybe(null))).toEqual(rhs(Nothing())) // ?
+    expect(lhs(Nothing())).toEqual(rhs(Nothing()))
   })
 })
 
@@ -79,8 +79,8 @@ describe('FlatSequence', () => {
     expect(result([])).toEqual([])
     expect(result(null)).toEqual(null)
     expect(result([null])).toEqual([null])
-    expect(result(Nothing)).toEqual(Nothing)
-    expect(result([Nothing])).toEqual([Nothing])
+    expect(result(Nothing())).toEqual(Nothing())
+    expect(result([Nothing()])).toEqual([Nothing()])
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
     expect(result([[1, 2], 3])).toEqual([1, 2, 3])
     expect(result([[1, null], 3])).toEqual([1, null, 3])
@@ -173,10 +173,10 @@ describe('SomethingMonad', () => {
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing())
     expect(result([null])).toEqual([])
-    expect(result(Nothing)).toEqual(Nothing)
-    expect(result([Nothing])).toEqual([])
+    expect(result(Nothing())).toEqual(Nothing())
+    expect(result([Nothing()])).toEqual([])
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
   })
 
@@ -194,7 +194,7 @@ describe('SomethingMonad', () => {
       x => x.toString()
     )
 
-    expect(result(null)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing())
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
@@ -203,7 +203,7 @@ describe('SomethingMonad', () => {
       x => x.toString()
     )
 
-    expect(result(1)).toEqual(Nothing)
+    expect(result(1)).toEqual(Nothing())
   })
 
   it('applies functions to each element of an input sequence', () => {
@@ -231,7 +231,7 @@ describe('SomethingMonad', () => {
 
   it('filters nested Nothings from the results of previous functions', () => {
     const result = chainFlat(
-      x => [null, 1, Nothing],
+      x => [null, 1, Nothing()],
       x => x.toString()
     )
 
@@ -293,10 +293,10 @@ describe('FlatSequence . Maybe', () => {
 
     expect(result(1)).toEqual(1)
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual(Nothing)
-    expect(result([null])).toEqual([Nothing])
-    expect(result(Nothing)).toEqual(Nothing)
-    expect(result([Nothing])).toEqual([Nothing])
+    expect(result(null)).toEqual(Nothing())
+    expect(result([null])).toEqual([Nothing()])
+    expect(result(Nothing())).toEqual(Nothing())
+    expect(result([Nothing()])).toEqual([Nothing()])
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
   })
 
@@ -314,7 +314,7 @@ describe('FlatSequence . Maybe', () => {
       x => x.toString()
     )
 
-    expect(result(null)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing())
   })
 
   it('returns Nothing instead of applying functions to Nothings from previous functions', () => {
@@ -323,7 +323,7 @@ describe('FlatSequence . Maybe', () => {
       x => x.toString()
     )
 
-    expect(result(1)).toEqual(Nothing)
+    expect(result(1)).toEqual(Nothing())
   })
 
   it('applies functions to each element of an input sequence', () => {
@@ -351,11 +351,11 @@ describe('FlatSequence . Maybe', () => {
 
   it('returns Nothing instead of applying functions to nested Nothings from previous functions', () => {
     const result = chainFlat(
-      x => [null, 1, Nothing],
+      x => [null, 1, Nothing()],
       x => x.toString()
     )
 
-    expect(result(1)).toEqual([Nothing, '1', Nothing])
+    expect(result(1)).toEqual([Nothing(), '1', Nothing()])
   })
 
   it('does nothing to return values from the last function', () => {
@@ -436,11 +436,11 @@ describe('FlatSequence . Maybe', () => {
       'a - 2',
       'b - 2',
       'c - 2',
-      Nothing,
+      Nothing(),
       'a - 4',
       'b - 4',
       'c - 4',
-      Nothing
+      Nothing()
     ])
   })
 })
@@ -454,7 +454,7 @@ describe('Maybe . FlatSequence', () => {
     expect(result(1)).toEqual(1)
     expect(result([1, 2, 3])).toEqual([1, 2, 3])
     expect(result([])).toEqual([])
-    expect(result(null)).toEqual(Nothing)
+    expect(result(null)).toEqual(Nothing())
     expect(result([undefined])).toEqual([undefined]) // not great
   })
 

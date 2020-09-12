@@ -5,17 +5,17 @@ const { compose } = require('./common')
 
 describe('maybe', () => {
   it('do', () => {
-    const nothing = maybe.Nothing
+    const nothing = maybe.Nothing()
     const just = maybe.Just('hi')
     const id = x => x
 
-    expect(nothing.map(id)).toStrictEqual(maybe.Nothing)
+    expect(nothing.map(id)).toStrictEqual(maybe.Nothing())
     expect(just.map(id)).toStrictEqual(maybe.Just('hi'))
 
     expect(maybe.Maybe('hi')).toStrictEqual(maybe.Just('hi'))
     expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
-    expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing)
-    expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing)
+    expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing())
 
     expect(just.caseMap({
       just: v => v + '!',
@@ -30,7 +30,7 @@ describe('maybe', () => {
 
   it('is a functor', () => {
     const just = maybe.Just(8)
-    const nothing = maybe.Nothing
+    const nothing = maybe.Nothing()
     const g = x => x - 9
     const f = x => x * 2
 
@@ -38,14 +38,14 @@ describe('maybe', () => {
       .toStrictEqual(just.map(g).map(f))
     expect(nothing.map(compose(f)(g)))
       .toStrictEqual(nothing.map(g).map(f))
-    expect(just.map(() => undefined)).toStrictEqual(maybe.Nothing)
+    expect(just.map(() => undefined)).toStrictEqual(maybe.Nothing())
     expect(just.map(x => x + 1)).toStrictEqual(maybe.Just(9))
     expect(just.map(x => maybe.Just(x + 1))).toStrictEqual(maybe.Just(9))
   })
 
   const m1 = maybe.Just('hi')
   const m2 = maybe.Just('there')
-  const m3 = maybe.Nothing
+  const m3 = maybe.Nothing()
 
   describe('given', () => {
     it('applies the function when all Maybes are Justs', () => {
@@ -60,7 +60,7 @@ describe('maybe', () => {
       expect(
         maybe.given(m1, m2, m3)(() => 'hi there')
       ).toEqual(
-        maybe.Nothing
+        maybe.Nothing()
       )
     })
   })
@@ -68,7 +68,7 @@ describe('maybe', () => {
   describe('none', () => {
     it('applies the function when all Maybes are Nothing', () => {
       expect(
-        maybe.none(m3, maybe.Nothing)(() => 'hi there')
+        maybe.none(m3, maybe.Nothing())(() => 'hi there')
       ).toEqual(
         maybe.Just('hi there')
       )
@@ -76,9 +76,9 @@ describe('maybe', () => {
 
     it('returns Nothing when any Maybe is Just', () => {
       expect(
-        maybe.none(m3, m2, maybe.Nothing)(() => 'hi there')
+        maybe.none(m3, m2, maybe.Nothing())(() => 'hi there')
       ).toEqual(
-        maybe.Nothing
+        maybe.Nothing()
       )
     })
   })
@@ -97,7 +97,7 @@ describe('maybe', () => {
         [false, () => 1],
         [false, () => 2],
         [false, () => 3]
-      )).toEqual(maybe.Nothing)
+      )).toEqual(maybe.Nothing())
     })
   })
 })
