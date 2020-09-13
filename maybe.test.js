@@ -99,5 +99,29 @@ describe('maybe', () => {
         [false, () => 3]
       )).toEqual(maybe.Nothing())
     })
+
+    it('nests cases', () => {
+      expect(maybe.cases(
+        [false, [
+          [true, () => 1]
+        ]],
+        [true, [
+          [false, () => 2],
+          [true, () => 3]
+        ]]
+      )).toEqual(maybe.Just(3))
+    })
+
+    it('nests cases when none of the conditions are true', () => {
+      expect(maybe.cases(
+        [false, [
+          [false, () => 1]
+        ]],
+        [false, [
+          [false, () => 2],
+          [false, () => 3]
+        ]]
+      )).toEqual(maybe.Nothing())
+    })
   })
 })

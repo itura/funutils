@@ -1,15 +1,15 @@
 const { apply, composeM, id, chain } = require('./common')
 const { map, flatten, filter } = require('./array')
-const { caseMap, Maybe } = require('./maybe')
+const maybe = require('./maybe')
 
 const IdMonad = {
-  bind: f => Mx => f(Mx),
-  unit: id
+  unit: id,
+  bind: apply
 }
 
 const MaybeMonad = {
-  unit: Maybe,
-  bind: f => caseMap({
+  unit: maybe.Maybe,
+  bind: f => maybe.caseMap({
     just: apply(f)
   })
 }
@@ -28,24 +28,22 @@ const seqCaseMap = cases => Mx => {
 
 const SequenceMonad = (...operations) => {
   return {
-    unit: x => [x],
+    unit: Array.of,
     bind: f => seqCaseMap({
       one: apply(f),
-      many: xs => chain(
+      many: chain(
         map(apply(f)),
         ...operations,
         flatten()
-      )(xs)
+      )
     })
   }
 }
 
 const NotNothingMonad = SequenceMonad(
   filter(chain(
-    x => {
-      return Maybe(x)
-    },
-    caseMap({
+    maybe.Maybe,
+    maybe.caseMap({
       just: () => true,
       nothing: () => false
     })

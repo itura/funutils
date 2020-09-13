@@ -88,10 +88,12 @@ const none = (...ms) => f => {
 
 const cases = (...specs) =>
   reduce(
-    (result, [condition, effect]) => caseMap({
+    (result, [condition, effect]) => result.caseMap({
       just: Maybe,
-      nothing: () => Maybe(condition && effect())
-    })(result),
+      nothing: () => condition && Array.isArray(effect)
+        ? cases(...effect).caseMap({ just: Maybe })
+        : Maybe(condition && effect())
+    }),
     nothing
   )(specs)
 
