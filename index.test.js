@@ -236,12 +236,13 @@ describe('funutils', () => {
   })
 
   test('perf', async () => {
-    const [durationMs, result] = await funutils.perf.time(async () => {
+    const perf = funutils.perf(global.performance || require('perf_hooks').performance)
+    const [durationMs, result] = await perf.time(async () => {
       await funutils.sleep(50)
       return 'wow so fast'
     })
 
-    expect(durationMs).toBeGreaterThan(50)
+    expect(durationMs).toBeGreaterThanOrEqual(50)
     expect(result).toEqual('wow so fast')
   })
 

@@ -1,13 +1,9 @@
-const p = global.performance
-
-const time = async (action) => {
-  const t0 = p.now()
-  const result = await action()
-  const t1 = p.now()
-  const durationMs = t1 - t0
-  return [durationMs, result]
-}
-
-module.exports = {
-  time
-}
+module.exports = performance => ({
+  time: async (action) => {
+    const t0 = performance.now()
+    const result = await action()
+    const t1 = performance.now()
+    const durationMs = Math.ceil(t1 - t0)
+    return [durationMs, result]
+  }
+})
