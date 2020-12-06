@@ -1,4 +1,4 @@
-const { reduce } = require('./array')
+const array = require('./array')
 const { id } = require('./common')
 
 const map = function (f) {
@@ -52,27 +52,32 @@ const caseMap = cases => maybe => {
   }
 
   if (maybe instanceof Nothing) {
-    return cases.nothing ? cases.nothing() : nothing
+    if (!cases.nothing) {
+      throw new TypeError('funutils.maybe: unhandled Nothing')
+    }
+    return cases.nothing()
   }
 
   throw new TypeError(`Not a Maybe: '${maybe}'`)
 }
 
 const given = (...ms) => f => {
-  const maybeArgs = reduce(
+  const maybeArgs = array.reduce(
     (maybeArgs, m) => caseMap({
-      just: v => maybeArgs.map(args => args.concat(v))
+      just: v => maybeArgs.map(args => args.concat(v)),
+      nothing: () => nothing
     })(m),
     Just([])
   )(ms)
 
   return caseMap({
-    just: args => Just(f(...args))
+    just: args => Just(f(...args)),
+    nothing: () => nothing
   })(maybeArgs)
 }
 
 const none = (...ms) => f => {
-  const maybeArgs = reduce(
+  const maybeArgs = array.reduce(
     (maybeArgs, m) => caseMap({
       just: () => m,
       nothing: () => maybeArgs.map(id)
@@ -87,7 +92,7 @@ const none = (...ms) => f => {
 }
 
 const cases = (...specs) =>
-  reduce(
+  array.reduce(
     (result, [condition, effect]) => result.caseMap({
       just: Maybe,
       nothing: () => condition && Array.isArray(effect)

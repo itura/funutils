@@ -10,7 +10,8 @@ const IdMonad = {
 const MaybeMonad = {
   unit: maybe.Maybe,
   bind: f => maybe.caseMap({
-    just: apply(f)
+    just: apply(f),
+    nothing: maybe.Nothing
   })
 }
 

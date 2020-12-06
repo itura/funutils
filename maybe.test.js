@@ -16,16 +16,6 @@ describe('maybe', () => {
     expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
     expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing())
     expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing())
-
-    expect(just.caseMap({
-      just: v => v + '!',
-      nothing: () => 'bye'
-    })).toEqual('hi!')
-
-    expect(nothing.caseMap({
-      just: v => v + '!',
-      nothing: () => 'bye'
-    })).toEqual('bye')
   })
 
   it('is a functor', () => {
@@ -46,6 +36,37 @@ describe('maybe', () => {
   const m1 = maybe.Just('hi')
   const m2 = maybe.Just('there')
   const m3 = maybe.Nothing()
+
+  describe('caseMap', () => {
+    const cases = {
+      just: v => v + '!',
+      nothing: () => 'bye'
+    }
+
+    describe('when value is a Just', () => {
+      it('applies the just case', () => {
+        expect(maybe.caseMap(cases)(m1)).toEqual('hi!')
+        expect(m1.caseMap(cases)).toEqual('hi!')
+      })
+
+      it('unwraps the value by default', () => {
+        expect(maybe.caseMap({})(m1)).toEqual('hi')
+        expect(m1.caseMap({})).toEqual('hi')
+      })
+    })
+
+    describe('when value is a Nothing', () => {
+      it('applies the nothing case', () => {
+        expect(maybe.caseMap(cases)(m3)).toEqual('bye')
+        expect(m3.caseMap(cases)).toEqual('bye')
+      })
+
+      it('throws an error when no error case is given', () => {
+        expect(() => maybe.caseMap({})(m3)).toThrow('funutils.maybe: unhandled Nothing')
+        expect(() => m3.caseMap({})).toThrow('funutils.maybe: unhandled Nothing')
+      })
+    })
+  })
 
   describe('given', () => {
     it('applies the function when all Maybes are Justs', () => {
