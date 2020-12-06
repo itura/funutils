@@ -16,6 +16,9 @@ describe('maybe', () => {
     expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
     expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing())
     expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing())
+
+    expect(maybe.toBoolean(maybe.Just('hi'))).toEqual(true)
+    expect(maybe.toBoolean(maybe.Nothing())).toEqual(false)
   })
 
   it('is a functor', () => {

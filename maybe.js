@@ -1,16 +1,27 @@
 const array = require('./array')
-const { id } = require('./common')
+const { id, chain } = require('./common')
 
-const map = function (f) {
-  return caseMap({
-    nothing: () => nothing,
-    just: value => Maybe(f(value))
-  })(this)
+const Maybe = function (x) {
+  return isMaybe(x)
+    ? x
+    : x || x === 0
+      ? Just(x)
+      : nothing
 }
 
-const caseMapMethod = function (cases) {
-  return caseMap(cases)(this)
+Maybe.prototype = {
+  map: function (f) {
+    return caseMap({
+      just: value => Maybe(f(value)),
+      nothing: () => nothing
+    })(this)
+  },
+  caseMap: function (cases) {
+    return caseMap(cases)(this)
+  }
 }
+
+const isMaybe = x => x instanceof Maybe
 
 const Just = function (value) {
   if (!(this instanceof Just)) {
@@ -19,32 +30,18 @@ const Just = function (value) {
 
   this.value = value
 }
-Just.prototype = {
-  map,
-  caseMap: caseMapMethod
-}
+
+Just.prototype = Object.create(Maybe.prototype)
 
 const Nothing = function () {
   if (!(this instanceof Nothing)) {
-    return new Nothing()
+    return nothing
   }
 }
-Nothing.prototype = {
-  map,
-  caseMap: caseMapMethod
-}
 
-const isMaybe = x => x instanceof Just || x instanceof Nothing
+Nothing.prototype = Object.create(Maybe.prototype)
 
 const nothing = new Nothing()
-
-const Maybe = x => {
-  return isMaybe(x)
-    ? x
-    : x || x === 0
-      ? Just(x)
-      : nothing
-}
 
 const caseMap = cases => maybe => {
   if (maybe instanceof Just) {
@@ -58,38 +55,40 @@ const caseMap = cases => maybe => {
     return cases.nothing()
   }
 
-  throw new TypeError(`Not a Maybe: '${maybe}'`)
+  throw new TypeError(`funutils.maybe: not a Maybe: '${maybe}'`)
 }
 
-const given = (...ms) => f => {
-  const maybeArgs = array.reduce(
-    (maybeArgs, m) => m.caseMap({
-      just: v => maybeArgs.map(args => args.concat(v)),
+const given = (...ms) => f =>
+  chain(
+    array.reduce(
+      (maybeArgs, m) => m.caseMap({
+        just: v => maybeArgs.map(args => args.concat(v)),
+        nothing: () => nothing
+      }),
+      Just([])
+    ),
+
+    caseMap({
+      just: args => Just(f(...args)),
       nothing: () => nothing
-    }),
-    Just([])
+    })
   )(ms)
 
-  return maybeArgs.caseMap({
-    just: args => Just(f(...args)),
-    nothing: () => nothing
-  })
-}
+const none = (...ms) => f =>
+  chain(
+    array.reduce(
+      (maybeArgs, m) => m.caseMap({
+        just: () => m,
+        nothing: () => maybeArgs.map(id)
+      }),
+      nothing
+    ),
 
-const none = (...ms) => f => {
-  const maybeArgs = array.reduce(
-    (maybeArgs, m) => m.caseMap({
-      just: () => m,
-      nothing: () => maybeArgs.map(id)
-    }),
-    nothing
+    caseMap({
+      just: () => nothing,
+      nothing: () => Just(f())
+    })
   )(ms)
-
-  return maybeArgs.caseMap({
-    just: () => nothing,
-    nothing: () => Just(f())
-  })
-}
 
 const cases = (...specs) =>
   array.reduce(
@@ -111,14 +110,20 @@ const dig = (obj, ...keys) =>
     Maybe(obj)
   )(keys)
 
+const toBoolean = caseMap({
+  just: () => true,
+  nothing: () => false
+})
+
 module.exports = {
+  Maybe,
   Just,
   Nothing,
   caseMap,
   isMaybe,
-  Maybe,
   given,
   none,
   cases,
-  dig
+  dig,
+  toBoolean
 }
