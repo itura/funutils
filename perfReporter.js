@@ -16,7 +16,7 @@ const redCheck = Colors(fg(Red))('☒')
 const skippedCheck = Colors(bold)('◻︎')
 
 const displayNameText = chain(
-  runConfig => maybe.Maybe(runConfig.context.config.displayName),
+  runConfig => maybe.dig(runConfig, 'context', 'config', 'displayName'),
   maybe.caseMap({
     just: chain(
       displayName => `  ${displayName.name}  `,

@@ -145,4 +145,78 @@ describe('maybe', () => {
       )).toEqual(maybe.Nothing())
     })
   })
+
+  describe('dig', () => {
+    const testObj = {
+      key: 'value',
+      nested: { key: 'nestedValue' },
+      array: ['arrayValue']
+    }
+
+    it('safely accesses objects', () => {
+      expect(maybe.dig(testObj, 'key')).toEqual(maybe.Just('value'))
+      expect(maybe.dig(testObj, 'nested', 'key')).toEqual(maybe.Just('nestedValue'))
+      expect(maybe.dig(testObj, 'beep')).toEqual(maybe.Nothing())
+      expect(maybe.dig(testObj, 'beep', 'boop')).toEqual(maybe.Nothing())
+
+      expect(maybe.dig(testObj, 'array')).toEqual(maybe.Just(['arrayValue']))
+      expect(maybe.dig(testObj, 'array', 0)).toEqual(maybe.Just('arrayValue'))
+      expect(maybe.dig(testObj, 'array', 1)).toEqual(maybe.Nothing())
+    })
+
+    it('safely accesses arrays', () => {
+      const array = ['1', '2']
+      expect(maybe.dig(array, 0)).toEqual(maybe.Just('1'))
+      expect(maybe.dig(array, 2)).toEqual(maybe.Nothing())
+      expect(maybe.dig(array, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig([], 'hi')).toEqual(maybe.Nothing())
+    })
+
+    it('safely access strings', () => {
+      expect(maybe.dig('hi', 0)).toEqual(maybe.Just('h'))
+      expect(maybe.dig('hi', 2)).toEqual(maybe.Nothing())
+      expect(maybe.dig('hi', 'bye')).toEqual(maybe.Nothing())
+    })
+
+    it('safely accesses things without keys', () => {
+      expect(maybe.dig(null, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig(null, 1)).toEqual(maybe.Nothing())
+      expect(maybe.dig(undefined, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig(undefined, 1)).toEqual(maybe.Nothing())
+      expect(maybe.dig(0, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig(0, 1)).toEqual(maybe.Nothing())
+      expect(maybe.dig(true, 1)).toEqual(maybe.Nothing())
+      expect(maybe.dig(true, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig(false, 1)).toEqual(maybe.Nothing())
+      expect(maybe.dig(false, 'hi')).toEqual(maybe.Nothing())
+    })
+
+    it('safely accesses maybes', () => {
+      expect(maybe.dig(maybe.Nothing(), 0)).toEqual(maybe.Nothing())
+      expect(maybe.dig(maybe.Nothing(), 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig(maybe.Maybe(null), 'hi')).toEqual(maybe.Nothing())
+
+      const obj = maybe.Just(testObj)
+
+      expect(maybe.dig(obj, 'key')).toEqual(maybe.Just('value'))
+      expect(maybe.dig(obj, 'nested', 'key')).toEqual(maybe.Just('nestedValue'))
+      expect(maybe.dig(obj, 'beep')).toEqual(maybe.Nothing())
+      expect(maybe.dig(obj, 'beep', 'boop')).toEqual(maybe.Nothing())
+
+      expect(maybe.dig(obj, 'array')).toEqual(maybe.Just(['arrayValue']))
+      expect(maybe.dig(obj, 'array', 0)).toEqual(maybe.Just('arrayValue'))
+      expect(maybe.dig(obj, 'array', 1)).toEqual(maybe.Nothing())
+
+      const array = maybe.Just(['1', '2'])
+      expect(maybe.dig(array, 0)).toEqual(maybe.Just('1'))
+      expect(maybe.dig(array, 2)).toEqual(maybe.Nothing())
+      expect(maybe.dig(array, 'hi')).toEqual(maybe.Nothing())
+      expect(maybe.dig([], 'hi')).toEqual(maybe.Nothing())
+
+      const string = maybe.Just('hi')
+      expect(maybe.dig(string, 0)).toEqual(maybe.Just('h'))
+      expect(maybe.dig(string, 2)).toEqual(maybe.Nothing())
+      expect(maybe.dig(string, 'bye')).toEqual(maybe.Nothing())
+    })
+  })
 })

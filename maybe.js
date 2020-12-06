@@ -63,32 +63,32 @@ const caseMap = cases => maybe => {
 
 const given = (...ms) => f => {
   const maybeArgs = array.reduce(
-    (maybeArgs, m) => caseMap({
+    (maybeArgs, m) => m.caseMap({
       just: v => maybeArgs.map(args => args.concat(v)),
       nothing: () => nothing
-    })(m),
+    }),
     Just([])
   )(ms)
 
-  return caseMap({
+  return maybeArgs.caseMap({
     just: args => Just(f(...args)),
     nothing: () => nothing
-  })(maybeArgs)
+  })
 }
 
 const none = (...ms) => f => {
   const maybeArgs = array.reduce(
-    (maybeArgs, m) => caseMap({
+    (maybeArgs, m) => m.caseMap({
       just: () => m,
       nothing: () => maybeArgs.map(id)
-    })(m),
+    }),
     nothing
   )(ms)
 
-  return caseMap({
+  return maybeArgs.caseMap({
     just: () => nothing,
     nothing: () => Just(f())
-  })(maybeArgs)
+  })
 }
 
 const cases = (...specs) =>
@@ -102,6 +102,15 @@ const cases = (...specs) =>
     nothing
   )(specs)
 
+const dig = (obj, ...keys) =>
+  array.reduce(
+    (result, key) => result.caseMap({
+      just: r => Maybe(r[key]),
+      nothing: () => nothing
+    }),
+    Maybe(obj)
+  )(keys)
+
 module.exports = {
   Just,
   Nothing,
@@ -110,5 +119,6 @@ module.exports = {
   Maybe,
   given,
   none,
-  cases
+  cases,
+  dig
 }
