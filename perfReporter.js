@@ -1,5 +1,6 @@
 const { chain, tap } = require('./common')
 const { map, reduce, flatten } = require('./array')
+const maybe = require('./maybe')
 const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, padEnd, bold, eraseLine } = require('./colors')
 
 const duration = Colors(padEnd(5))
@@ -14,11 +15,23 @@ const greenCheck = Colors(fg(Green))('☑︎')
 const redCheck = Colors(fg(Red))('☒')
 const skippedCheck = Colors(bold)('◻︎')
 
+const displayNameText = chain(
+  runConfig => maybe.Maybe(runConfig.context.config.displayName),
+  maybe.caseMap({
+    just: chain(
+      displayName => `  ${displayName.name}  `,
+      Colors(bg(Gray), fg(White)),
+      result => ` ${result}`
+    ),
+    nothing: () => ''
+  })
+)
+
 const PerfTestReporter = function () {}
 
 PerfTestReporter.prototype = {
-  onRunStart: function (runResult) {
-    process.stdout.write(`\n\n${running}`)
+  onTestStart: function (runConfig) {
+    process.stdout.write(`\n\n${running}${displayNameText(runConfig)}`)
   },
 
   onTestResult: function (runConfig, fileResults, runResults) {
@@ -26,7 +39,7 @@ PerfTestReporter.prototype = {
     const passed = fileResults.numFailingTests === 0
 
     process.stdout.write(`${eraseLine}\r`)
-    console.log(`${status(passed)} Performance Report (${totalDuration.toFixed(0)} ms)`)
+    console.log(`${status(passed)}${displayNameText(runConfig)} Performance Report (${totalDuration.toFixed(0)} ms)`)
 
     chain(
       reduce(

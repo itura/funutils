@@ -10,13 +10,29 @@
     "lint": "standard --fix"
   },
   "jest": {
-    "moduleFileExtensions": [
-      "js",
-      "jsx"
-    ],
-    "transform": {
-      "^.+\\.jsx$": "babel-jest"
-    }
+    "projects": [
+      {
+        "displayName": "jsdom",
+        "testEnvironment": "jsdom",
+        "moduleFileExtensions": [
+          "js",
+          "jsx"
+        ],
+        "transform": {
+          "^.+\\.jsx$": "babel-jest"
+        }
+      },
+      {
+        "displayName": "node",
+        "testEnvironment": "node",
+        "moduleFileExtensions": [
+          "js"
+        ],
+        "transform": {
+          "^.+\\.jsx$": "babel-jest"
+        }
+      }
+    ]
   },
   "babel": {
     "presets": [
