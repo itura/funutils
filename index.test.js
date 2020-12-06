@@ -30,20 +30,20 @@ describe('funutils', () => {
       ).toEqual(['hi!'])
 
       expect(
-        funutils.chainF(['hi'])(
+        funutils.chainF(
           x => `${x}!`,
           x => `${x}${x}`
-        )
+        )(['hi'])
       ).toEqual(['hi!hi!'])
 
       const { Maybe, Just, Nothing } = funutils.maybe
       const fun = x => `${x}!`
       expect(
-        funutils.chainF(Maybe(null))(fun, fun)
+        funutils.chainF(fun, fun)(Maybe(null))
       ).toStrictEqual(Nothing())
 
       expect(
-        funutils.chainF(Maybe('hi'))(fun, fun)
+        funutils.chainF(fun, fun)(Maybe('hi'))
       ).toStrictEqual(Just('hi!!'))
     })
 

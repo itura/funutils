@@ -17,10 +17,10 @@ const chain = (...fs) => initial =>
 const applyP = P => f =>
   P.then(f)
 
-const chainP = (...fs) => init =>
+const chainP = (...fs) => initial =>
   reduce(
     (P, f) => applyP(P)(f),
-    Promise.resolve(init)
+    Promise.resolve(initial)
   )(fs)
 
 const applyM = M => f =>
@@ -42,7 +42,7 @@ const composeM = M1 => M2 => {
 const applyF = F => f =>
   F.map(f)
 
-const chainF = F => (...fs) =>
+const chainF = (...fs) => F =>
   reduce(
     (F, f) => applyF(F)(f),
     F
