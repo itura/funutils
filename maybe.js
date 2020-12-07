@@ -11,10 +11,7 @@ const Maybe = function (x) {
 
 Maybe.prototype = {
   map: function (f) {
-    return caseMap({
-      just: value => Maybe(f(value)),
-      nothing: () => nothing
-    })(this)
+    return map(f)(this)
   },
   caseMap: function (cases) {
     return caseMap(cases)(this)
@@ -57,6 +54,11 @@ const caseMap = cases => maybe => {
 
   throw new TypeError(`funutils.maybe: not a Maybe: '${maybe}'`)
 }
+
+const map = f => caseMap({
+  just: value => Maybe(f(value)),
+  nothing: () => nothing
+})
 
 const given = (...ms) => f =>
   chain(
@@ -120,6 +122,7 @@ module.exports = {
   Just,
   Nothing,
   caseMap,
+  map,
   isMaybe,
   given,
   none,

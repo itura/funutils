@@ -40,6 +40,21 @@ describe('maybe', () => {
   const m2 = maybe.Just('there')
   const m3 = maybe.Nothing()
 
+  describe('map', () => {
+    describe('when value is a Just', () => {
+      it('applies the given function', () => {
+        expect(maybe.map(x => x + '!')(m1)).toEqual(maybe.Just('hi!'))
+        expect(maybe.map(x => maybe.Just(x + '!'))(m1)).toEqual(maybe.Just('hi!'))
+      })
+    })
+
+    describe('when value is a Nothing', () => {
+      it('returns Nothing', () => {
+        expect(maybe.map(x => x + '!')(m3)).toEqual(maybe.Nothing())
+      })
+    })
+  })
+
   describe('caseMap', () => {
     const cases = {
       just: v => v + '!',
