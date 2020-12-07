@@ -5,14 +5,14 @@ const funutils = require('./')
 describe('funutils', () => {
   describe('common', () => {
     test('chain w/ Array', () => {
-      const { map, filter, flatten, compact, reduce } = funutils.array
+      const { map, filter, flat, compact, reduce } = funutils.array
 
       expect(
         funutils.chain(
           map(x => x + 1),
           filter(x => x % 2 === 1),
           map(x => [x, null]),
-          flatten(),
+          flat(),
           compact(),
           reduce(
             (acc, x) => acc + (x === null ? 2 : x),

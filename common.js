@@ -71,8 +71,8 @@ const zip = (...xss) => {
 const randomInt = (range, min = 0) =>
   Math.floor(Math.random() * Math.floor(range)) + min
 
-const repeat = (count, fn) =>
-  [...Array(count)].map((_, i) => fn(i))
+const repeat = (count, f) =>
+  [...Array(count)].map((_, i) => f(i))
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 

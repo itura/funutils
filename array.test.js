@@ -58,7 +58,7 @@ describe('Array', () => {
 
     expect(
       chain(
-        array.flatten()
+        array.flat()
       )(data)
     ).toEqual(
       [1, 2, 3]
@@ -67,7 +67,7 @@ describe('Array', () => {
     expect(
       chain(
         array.map(x => [x, x]),
-        array.flatten()
+        array.flat()
       )(data)
     ).toEqual(
       [1, 1, 2, 2, 3, 3]

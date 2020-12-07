@@ -1,5 +1,5 @@
 const { apply, composeM, id, chain } = require('./common')
-const { map, flatten, filter } = require('./array')
+const { map, flat, filter } = require('./array')
 const maybe = require('./maybe')
 
 const IdMonad = {
@@ -35,7 +35,7 @@ const SequenceMonad = (...operations) => {
       many: chain(
         map(apply(f)),
         ...operations,
-        flatten()
+        flat()
       )
     })
   }

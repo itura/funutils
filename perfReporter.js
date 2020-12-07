@@ -1,5 +1,5 @@
 const { chain, tap } = require('./common')
-const { map, reduce, flatten } = require('./array')
+const { map, reduce, flat } = require('./array')
 const maybe = require('./maybe')
 const { Colors, ColorsWith, Gray, White, Yellow, Green, Red, fg, bg, padEnd, bold, eraseLine } = require('./colors')
 
@@ -82,7 +82,7 @@ PerfTestReporter.prototype = {
         })]
       }),
 
-      flatten(),
+      flat(),
 
       tap(lines => lines.forEach(line => console.log(line)))
     )(fileResults.testResults)

@@ -13,7 +13,7 @@ module.exports = {
   filter: f => a => a.filter(f),
   find: f => a => a.find(f),
   findIndex: f => a => a.findIndex(f),
-  flatten: (n = 1) => a => a.flat(n),
+  flat: (n = 1) => a => a.flat(n),
   includes: x => a => a.includes(x),
   indexOf: x => a => a.indexOf(x),
   join,
