@@ -276,15 +276,51 @@ describe('funutils', () => {
     )
 
     expect(
+      funutils.number.toPrecision()(1.11111)
+    ).toEqual(
+      '1.11111'
+    )
+
+    expect(
       funutils.number.toFixed(2)(1.11111)
     ).toEqual(
       '1.11'
     )
 
     expect(
+      funutils.number.toFixed()(1.11111)
+    ).toEqual(
+      '1'
+    )
+
+    expect(
       funutils.number.toLocaleString('de-DE')(123456.789)
     ).toEqual(
       '123.456,789'
+    )
+
+    expect(
+      funutils.number.toExponential(2)(1.11111)
+    ).toEqual(
+      '1.11e+0'
+    )
+
+    expect(
+      funutils.number.toExponential()(1.11111)
+    ).toEqual(
+      '1.11111e+0'
+    )
+
+    expect(
+      funutils.number.toString()(1.11111)
+    ).toEqual(
+      '1.11111'
+    )
+
+    expect(
+      funutils.number.toString(16)(1.11111)
+    ).toEqual(
+      '1.1c71b4784231'
     )
   })
 })
