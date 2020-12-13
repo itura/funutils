@@ -1,8 +1,18 @@
 /* eslint-env jest */
 
+/*
+Findings (with node v12.18.3, v14.4.0)
+- Generally, LazySeq performs the same as native array and LazySeqM performs worse
+- LazySeq will perform marginally better than native array when there are many
+  transformations on a very large array, but it's not as pronounced as I expected
+- Tests in node env are slightly faster than in jsdom, which maybe warrants a test
+  in an actual browser
+ */
+
 const LazySeqM = require('./LazySeqM')
 const LazySeq = require('./LazySeq')
 const monads = require('../monads')
+const { repeat, randomInt } = require('../common')
 const perf = require('../perf')(global.performance || require('perf_hooks').performance)
 
 const count = 24000
@@ -35,12 +45,58 @@ const collectAllFast =
       })
     )
 
+const data = repeat(count, i => ({ count: i, rando: randomInt(100), string: `${i} hi` }))
+const transform = x => ({ ...x, count: x.count + 1, random: randomInt(100 + x.count) })
+const transformM = x => [
+  ({ ...x, count: x.count + 1, random: randomInt(100 + x.count) }),
+  ({ ...x, count: x.count + 2, random: randomInt(100 + x.count) })
+]
+
 let inserted
 const insertToDb = data => {
   inserted++
-  const result = `Inserted ${data}`
+  const result = `Inserted ${data.count}`
   return Promise.resolve(result)
 }
+
+describe('Native array', () => {
+  beforeEach(() => {
+    inserted = 0
+  })
+
+  perfTest('fireAndForget', 60,
+    () => data
+      .map(transform)
+      .map(insertToDb)
+      .reduce(fireAndForget, Promise.resolve()),
+    results => {
+      expect(inserted).toEqual(count)
+      expect(results).toEqual(`Inserted ${count}`)
+    }
+  )
+
+  perfTest('collectAll', 5000,
+    () => data
+      .map(transform)
+      .map(insertToDb)
+      .reduce(collectAll, Promise.resolve([])),
+    results => {
+      expect(inserted).toEqual(count)
+      expect(results[count - 1]).toEqual(`Inserted ${count}`)
+    }
+  )
+
+  perfTest('collectAllFast', 60,
+    () => data
+      .map(transform)
+      .map(insertToDb)
+      .reduce(collectAllFast, Promise.resolve([])),
+    results => {
+      expect(inserted).toEqual(count)
+      expect(results[count - 1]).toEqual(`Inserted ${count}`)
+    }
+  )
+})
 
 describe('LazySeq', () => {
   beforeEach(() => {
@@ -48,9 +104,9 @@ describe('LazySeq', () => {
   })
 
   describe('with normal reduce', () => {
-    perfTest('fireAndForget', 2400,
-      () => LazySeq()
-        .map(x => x + 1)
+    perfTest('fireAndForget', 60,
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .take(count)
         .reduce(fireAndForget, Promise.resolve()),
@@ -60,22 +116,9 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('fireAndForget with filter', 600,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .take(count)
-        .reduce(fireAndForget, Promise.resolve()),
-      results => {
-        expect(inserted).toEqual(count / 2)
-        expect(results).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('collectAll', 6200,
-      () => LazySeq()
-        .map(x => x + 1)
+    perfTest('collectAll', 5000,
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .take(count)
         .reduce(collectAll, Promise.resolve([])),
@@ -85,118 +128,53 @@ describe('LazySeq', () => {
       }
     )
 
-    perfTest('collectAll with filter', 2200,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .take(count)
-        .reduce(collectAll, Promise.resolve([])),
-      results => {
-        expect(inserted).toEqual(count / 2)
-        expect(results[count / 2 - 1]).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('collectAllFast', 2600,
-      () => LazySeq()
-        .map(x => x + 1)
+    perfTest('collectAllFast', 60,
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .take(count)
         .reduce(collectAllFast, Promise.resolve([])),
       results => {
         expect(inserted).toEqual(count)
         expect(results[count - 1]).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('collectAllFast with filter', 600,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .take(count)
-        .reduce(collectAllFast, Promise.resolve([])),
-      results => {
-        expect(inserted).toEqual(count / 2)
-        expect(results[count / 2 - 1]).toEqual(`Inserted ${count}`)
       }
     )
   })
 
   describe('with lazy reduce', () => {
     perfTest('fireAndForget', 60,
-      () => LazySeq()
-        .map(x => x + 1)
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .reduce(fireAndForget, Promise.resolve())
         .take(count),
       results => {
         expect(inserted).toEqual(count)
-        expect(results).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('fireAndForget with filter', 60,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .reduce(fireAndForget, Promise.resolve())
-        .take(count),
-      results => {
-        expect(inserted).toEqual(count / 2)
         expect(results).toEqual(`Inserted ${count}`)
       }
     )
 
     perfTest('collectAll', 3800,
-      () => LazySeq()
-        .map(x => x + 1)
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .reduce(collectAll, Promise.resolve([]))
         .take(count),
       results => {
         expect(inserted).toEqual(count)
         expect(results[count - 1]).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('collectAll with filter', 1000,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .reduce(collectAll, Promise.resolve([]))
-        .take(count),
-      results => {
-        expect(inserted).toEqual(count / 2)
-        expect(results[count / 2 - 1]).toEqual(`Inserted ${count}`)
       }
     )
 
     perfTest('collectAllFast', 100,
-      () => LazySeq()
-        .map(x => x + 1)
+      () => LazySeq(data)
+        .map(transform)
         .map(insertToDb)
         .reduce(collectAllFast, Promise.resolve([]))
         .take(count),
       results => {
         expect(inserted).toEqual(count)
         expect(results[count - 1]).toEqual(`Inserted ${count}`)
-      }
-    )
-
-    perfTest('collectAllFast with filter', 100,
-      () => LazySeq()
-        .map(x => x + 1)
-        .filter(x => x % 2 === 0)
-        .map(insertToDb)
-        .reduce(collectAllFast, Promise.resolve([]))
-        .take(count),
-      results => {
-        expect(inserted).toEqual(count / 2)
-        expect(results[count / 2 - 1]).toEqual(`Inserted ${count}`)
       }
     )
   })
@@ -210,8 +188,8 @@ const suiteFor = (name, monad) => {
 
     describe('with normal reduce', () => {
       perfTest('fireAndForget', 2500,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .take(count / 2)
           .reduce(fireAndForget, Promise.resolve()),
@@ -221,9 +199,9 @@ const suiteFor = (name, monad) => {
         }
       )
 
-      perfTest('collectAll', 6000,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+      perfTest('collectAll', 5000,
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .take(count / 2)
           .reduce(collectAll, Promise.resolve([])),
@@ -233,8 +211,8 @@ const suiteFor = (name, monad) => {
         }
       )
       perfTest('collectAllFast', 2500,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .take(count / 2)
           .reduce(collectAllFast, Promise.resolve([])),
@@ -247,8 +225,8 @@ const suiteFor = (name, monad) => {
 
     describe('with lazy reduce', () => {
       perfTest('fireAndForget', 150,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .reduce(fireAndForget, Promise.resolve())
           .take(count / 2),
@@ -259,8 +237,8 @@ const suiteFor = (name, monad) => {
       )
 
       perfTest('collectAll', 3900,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .reduce(collectAll, Promise.resolve([]))
           .take(count / 2),
@@ -271,8 +249,8 @@ const suiteFor = (name, monad) => {
       )
 
       perfTest('collectAllFast', 150,
-        () => LazySeqM(monad)
-          .map(x => [x + 1, x + 2])
+        () => LazySeqM(monad, data)
+          .map(transformM)
           .map(insertToDb)
           .reduce(collectAllFast, Promise.resolve([]))
           .take(count / 2),

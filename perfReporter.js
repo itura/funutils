@@ -12,7 +12,7 @@ const status = passed => passed
   : statusText(bg(Red))(' FAIL ')
 
 const greenCheck = Colors(fg(Green))('☑︎')
-const redCheck = Colors(fg(Red))('☒')
+const redCheck = Colors(fg(Red))('☒ ')
 const skippedCheck = Colors(bold)('◻︎')
 
 const displayNameText = chain(
@@ -30,13 +30,22 @@ const displayNameText = chain(
 const PerfTestReporter = function () {}
 
 PerfTestReporter.prototype = {
+  onRunComplete: function (runConfig, runResults) {
+    console.log()
+    map(chain(
+      r => r.failureMessage,
+      maybe.Maybe,
+      maybe.map(console.log)
+    ))(runResults.testResults)
+  },
+
   onTestStart: function (runConfig) {
     process.stdout.write(`\n\n${running}${displayNameText(runConfig)}`)
   },
 
   onTestResult: function (runConfig, fileResults, runResults) {
     const totalDuration = fileResults.perfStats.end - fileResults.perfStats.start
-    const passed = fileResults.numFailingTests === 0
+    const passed = fileResults.numFailingTests === 0 && !fileResults.failureMessage
 
     process.stdout.write(`${eraseLine}\r`)
     console.log(`${status(passed)}${displayNameText(runConfig)} Performance Report (${totalDuration.toFixed(0)} ms)`)
@@ -76,9 +85,8 @@ PerfTestReporter.prototype = {
           const expectedDuration = duration(r.expectedDuration)
           const durationText = `${actualDuration} < ${expectedDuration} `
           const icon = r.passed ? greenCheck : r.pending ? skippedCheck : redCheck
-          const errors = r.passed || r.pending ? '' : `\n${r.errors.join('\n')}\n`
 
-          return `    ${icon} ${lineItemText(`${durationText}${r.title}`)} ${errors}`
+          return `    ${icon} ${lineItemText(`${durationText}${r.title}`)}`
         })]
       }),
 

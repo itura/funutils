@@ -3,14 +3,14 @@
 const LazySeq = require('./LazySeq')
 
 describe('LazySeq', () => {
-  const data = [1, 2, 3]
+  const array = [1, 2, 3]
   const generator = function * () {
     yield 1
     yield 2
     yield 3
   }
   const sequences = {
-    iterator: () => data.values(),
+    array,
     generator
   }
 

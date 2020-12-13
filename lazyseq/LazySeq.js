@@ -3,32 +3,30 @@ const { integers } = require('../generators')
 
 const nil = Symbol('nil')
 
-const nilCaseMap = (x, cases) =>
-  x === nil
-    ? cases.nil
-    : cases.just(x)
-
-const defaultReducer = (acc, result) => nilCaseMap(result, {
-  nil: acc,
-  just: x => acc.concat(x)
-})
+const defaultReducer = (acc, result) => {
+  acc.push(result)
+  return acc
+}
 
 const defaultInitial = () => []
 
 const LazySeq = (generator = integers, config = {}) => {
+  const _generator = Array.isArray(generator)
+    ? () => generator.values()
+    : generator
   const initial = config.initial || defaultInitial
   const reducer = config.reducer || defaultReducer
   const fs = config.fs || []
 
   const map = f => {
-    return LazySeq(generator, {
+    return LazySeq(_generator, {
       ...config,
       fs: fs.concat(f)
     })
   }
 
   const filter = (f) => {
-    return LazySeq(generator, {
+    return LazySeq(_generator, {
       ...config,
       fs: fs.concat(x => f(x) ? x : nil)
     })
@@ -44,7 +42,7 @@ const LazySeq = (generator = integers, config = {}) => {
   }
 
   const reduce = (reducer, initial) => {
-    return LazySeq(generator, {
+    return LazySeq(_generator, {
       ...config,
       reducer,
       initial: () => initial
@@ -52,15 +50,12 @@ const LazySeq = (generator = integers, config = {}) => {
   }
 
   const take = lazyReduce({
-    generator,
+    generator: _generator,
     fs,
     reducer,
     initial,
     result: (fs, next) => fs.reduce(
-      (prev, f) => nilCaseMap(prev, {
-        nil: nil,
-        just: x => f(x)
-      }),
+      (prev, f) => prev === nil ? nil : f(prev),
       next
     )
   })
