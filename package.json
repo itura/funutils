@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest --watchAll --testPathIgnorePatterns='perf\\.test'",
+    "coverage": "npm run test -- --no-watch-all --coverage",
     "perf": "jest --testPathPattern='perf\\.test' --runInBand --reporters='./perfReporter.js'",
     "lint": "standard --fix"
   },
