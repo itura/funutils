@@ -15,6 +15,12 @@ Maybe.prototype = {
   },
   caseMap: function (cases) {
     return caseMap(cases)(this)
+  },
+  dig: function (...keys) {
+    return dig(...keys)(this)
+  },
+  toBoolean: function () {
+    return toBoolean(this)
   }
 }
 
@@ -103,7 +109,7 @@ const cases = (...specs) =>
     nothing
   )(specs)
 
-const dig = (obj, ...keys) =>
+const dig = (...keys) => obj =>
   array.reduce(
     (result, key) => result.caseMap({
       just: r => Maybe(r[key]),
