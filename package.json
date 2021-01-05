@@ -4,6 +4,7 @@
   "description": "Fun functional utilities for ES6",
   "homepage": "https://github.com/austin-garrard/funutils",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "test": "jest --watchAll --testPathIgnorePatterns='perf\\.test'",
     "coverage": "npm run test -- --no-watch-all --coverage",
