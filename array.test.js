@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
 const array = require('./array')
-const { chain } = require('./common')
+const { chain, id } = require('./common')
 
 describe('Array', () => {
   test('Array.prototype aliases', () => {
@@ -309,6 +309,22 @@ describe('Array', () => {
       ).toEqual([[{ num: 1 }], [{ num: 2 }], [{ num: 2 }]])
     })
 
+    it('returns all functions', () => {
+      const f1 = () => 1
+      const f2 = () => 2
+      expect(
+        chain(
+          array.uniq()
+        )([f1, f2])
+      ).toEqual([f1, f2])
+
+      expect(
+        chain(
+          array.uniq(x => x.f)
+        )([{ f: f1 }, { f: f2 }])
+      ).toEqual([{ f: f1 }, { f: f2 }])
+    })
+
     it('applies a predicate if given', () => {
       expect(
         chain(
@@ -334,5 +350,105 @@ describe('Array', () => {
         )([{ num: 1 }, { num: 2 }, { num: 2 }, { num: 1 }])
       ).toEqual([{ num: 1 }])
     })
+  })
+
+  describe('groupBy', () => {
+    const data = [
+      { num: 1, str: 'a' },
+      { num: 2, str: 'b' },
+      { num: 2, str: 'c' },
+      { num: 3, str: 'c' }
+    ]
+    it('groups by strings returned by the function', () => {
+      expect(
+        chain(array.groupBy(x => x.str))(data)
+      ).toEqual({
+        a: [{ num: 1, str: 'a' }],
+        b: [{ num: 2, str: 'b' }],
+        c: [{ num: 2, str: 'c' }, { num: 3, str: 'c' }]
+      })
+
+      expect(
+        chain(array.groupBy(x => x.num === 1 ? 'A' : 'B'))(data)
+      ).toEqual({
+        A: [{ num: 1, str: 'a' }],
+        B: [{ num: 2, str: 'b' }, { num: 2, str: 'c' }, { num: 3, str: 'c' }]
+      })
+    })
+
+    it('groups by numbers returned by the function', () => {
+      expect(
+        chain(array.groupBy(x => x.num))(data)
+      ).toEqual({
+        1: [{ num: 1, str: 'a' }],
+        2: [{ num: 2, str: 'b' }, { num: 2, str: 'c' }],
+        3: [{ num: 3, str: 'c' }]
+      })
+    })
+
+    it('groups by null or undefined returned by the function', () => {
+      expect(
+        chain(array.groupBy(x => x.num % 2 === 0 ? null : undefined))(data)
+      ).toEqual({
+        '': [
+          { num: 1, str: 'a' },
+          { num: 2, str: 'b' },
+          { num: 2, str: 'c' },
+          { num: 3, str: 'c' }
+        ]
+      })
+    })
+
+    it('groups by functions returned by the function', () => {
+      expect(
+        chain(array.groupBy(x => () => x.num))(data)
+      ).toEqual({
+        function: [
+          { num: 1, str: 'a' },
+          { num: 2, str: 'b' },
+          { num: 2, str: 'c' },
+          { num: 3, str: 'c' }
+        ]
+      })
+    })
+
+    it('groups by objects', () => {
+      expect(
+        chain(array.groupBy(id))(data)
+      ).toEqual({
+        '[object Object]': [
+          { num: 1, str: 'a' },
+          { num: 2, str: 'b' },
+          { num: 2, str: 'c' },
+          { num: 3, str: 'c' }
+        ]
+      })
+    })
+
+    it('groups by toString', () => {
+      function Doggo (x) {
+        this.x = x
+      }
+      Doggo.prototype = {
+        toString: function () {
+          return `bork ${this.x}`
+        }
+      }
+
+      expect(
+        chain(array.groupBy(id))([new Doggo('one'), new Doggo('two'), new Doggo('two')])
+      ).toEqual({
+        'bork one': [new Doggo('one')],
+        'bork two': [new Doggo('two'), new Doggo('two')]
+      })
+    })
+  })
+
+  test('misc', () => {
+    const data = [1, 2, 3]
+    expect(chain(array.append(4))(data)).toEqual([1, 2, 3, 4])
+    expect(chain(array.prepend(4))(data)).toEqual([4, 1, 2, 3])
+    expect(chain(array.first())(data)).toEqual(1)
+    expect(chain(array.last())(data)).toEqual(3)
   })
 })

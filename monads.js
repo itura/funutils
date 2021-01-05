@@ -42,13 +42,7 @@ const SequenceMonad = (...operations) => {
 }
 
 const NotNothingMonad = SequenceMonad(
-  filter(chain(
-    maybe.Maybe,
-    maybe.caseMap({
-      just: () => true,
-      nothing: () => false
-    })
-  ))
+  filter(chain(maybe.Maybe, maybe.toBoolean))
 )
 const SomethingMonad = composeM(NotNothingMonad)(MaybeMonad)
 

@@ -6,12 +6,14 @@ const reduce = function (f, initial) {
 }
 const join = x => a => a.join(x)
 
+const createKey = key => {
+  return key === null || key === undefined ? '' : typeof key === 'function' ? 'function' : key.toString()
+}
 const uniq = (f = x => x) => a => {
   const acc = a.reduce(
-    (acc, x) => {
-      const comparisonValue = f(x)
-      const key = comparisonValue === null || comparisonValue === undefined ? '' : comparisonValue.toString()
-      return !acc.dict[key] || key.match(/^\[object .*\]$/)
+    (acc, x, i) => {
+      const key = createKey(f(x, i))
+      return !acc.dict[key] || key.match(/^\[object .*\]$/) || key === 'function'
         ? {
           dict: { ...acc.dict, [key]: x },
           values: acc.values.concat([x])
@@ -53,5 +55,16 @@ module.exports = {
     ? reduce((acc, x) => acc + '\n' + x, init)
     : join('\n'),
 
-  uniq
+  uniq,
+  append: x => a => [...a, x],
+  prepend: x => a => [x, ...a],
+  first: () => a => a.length ? a[0] : undefined,
+  last: () => a => a.length ? a[a.length - 1] : undefined,
+  groupBy: f => reduce(
+    (acc, x, i) => {
+      const key = createKey(f(x, i))
+      return { ...acc, [key]: (acc[key] || []).concat(x) }
+    },
+    {}
+  )
 }

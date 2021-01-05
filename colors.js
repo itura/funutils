@@ -1,6 +1,7 @@
 const { chain, repeat, Builder, id } = require('./common')
-const { map } = require('./array')
+const array = require('./array')
 const string = require('./string')
+const number = require('./number')
 
 // http://ascii-table.com/ansi-escape-sequences.php
 const ESC = '\u{1b}['
@@ -88,7 +89,10 @@ const showColors = (text = 'boop') => {
   if (text.length < 4) throw new TypeError('Provide text at least 4 characters long')
 
   const header = Colors(bold, fg(colorCodes.White), bg(colorCodes.Purple))
-  const column = v => `|${v}`.padEnd((text.length + 1) * 2)
+  const column = chain(
+    v => `|${v}`,
+    string.padEnd((text.length + 1) * 2)
+  )
   const columnHeaders = `color${column('normal')}${column('bold')}${column('underline')}${column('dim')}`
   const title = 'ANSI/VT100 Control Sequences (256 colors)'.padEnd(columnHeaders.length)
 
@@ -110,8 +114,8 @@ const showColors = (text = 'boop') => {
     ]
 
     console.log(
-      i.toString().padEnd(5),
-      ...map(v => v(text))(variations)
+      chain(number.toString(), string.padEnd(5))(i),
+      ...array.map(v => v(text))(variations)
     )
   })
 }
