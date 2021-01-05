@@ -257,4 +257,82 @@ describe('Array', () => {
       'hi\n1!\n2!\n3!'
     )
   })
+
+  describe('uniq', () => {
+    it('returns unique primitives', () => {
+      expect(
+        chain(
+          array.uniq()
+        )([1, 2, 2, 3, 4, 1])
+      ).toEqual([1, 2, 3, 4])
+
+      expect(
+        chain(
+          array.uniq()
+        )(['1', '2', '1', '3', '4', '4'])
+      ).toEqual(['1', '2', '3', '4'])
+    })
+
+    it('preserves null and undefined', () => {
+      expect(
+        chain(
+          array.uniq()
+        )([1, 2, null, 2, 3, 4, 1, null])
+      ).toEqual([1, 2, null, 3, 4, null])
+
+      expect(
+        chain(
+          array.uniq()
+        )(['1', '2', undefined, '1', '3', '4', null, '4'])
+      ).toEqual(['1', '2', undefined, '3', '4', null])
+    })
+
+    it('returns unique arrays of primitives', () => {
+      expect(
+        chain(
+          array.uniq()
+        )([[], [], [1, 2], [1], [1, 2]])
+      ).toEqual([[], [1, 2], [1]])
+    })
+
+    it('returns all objects', () => {
+      expect(
+        chain(
+          array.uniq()
+        )([{ num: 1 }, { num: 2 }, { num: 2 }])
+      ).toEqual([{ num: 1 }, { num: 2 }, { num: 2 }])
+
+      expect(
+        chain(
+          array.uniq()
+        )([[{ num: 1 }], [{ num: 2 }], [{ num: 2 }]])
+      ).toEqual([[{ num: 1 }], [{ num: 2 }], [{ num: 2 }]])
+    })
+
+    it('applies a predicate if given', () => {
+      expect(
+        chain(
+          array.uniq(x => x.num)
+        )([{ num: 1 }, { num: 2 }, { num: 2 }, { num: 1 }])
+      ).toEqual([{ num: 1 }, { num: 2 }])
+
+      expect(
+        chain(
+          array.uniq(x => x.num)
+        )([{ num: 1 }, { num: undefined }, { num: 2 }, { num: 2 }, { num: 1 }, { num: null }])
+      ).toEqual([{ num: 1 }, { num: undefined }, { num: 2 }])
+
+      expect(
+        chain(
+          array.uniq(x => ({ key: 'value' }))
+        )([{ num: 1 }, { num: 2 }, { num: 2 }, { num: 1 }])
+      ).toEqual([{ num: 1 }, { num: 2 }, { num: 2 }, { num: 1 }])
+
+      expect(
+        chain(
+          array.uniq(x => null)
+        )([{ num: 1 }, { num: 2 }, { num: 2 }, { num: 1 }])
+      ).toEqual([{ num: 1 }])
+    })
+  })
 })

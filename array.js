@@ -1,4 +1,3 @@
-
 const reduce = function (f, initial) {
   return a =>
     arguments.length > 1
@@ -6,6 +5,24 @@ const reduce = function (f, initial) {
       : a.reduce(f)
 }
 const join = x => a => a.join(x)
+
+const uniq = (f = x => x) => a => {
+  const acc = a.reduce(
+    (acc, x) => {
+      const comparisonValue = f(x)
+      const key = comparisonValue === null || comparisonValue === undefined ? '' : comparisonValue.toString()
+      return !acc.dict[key] || key.match(/^\[object .*\]$/)
+        ? {
+          dict: { ...acc.dict, [key]: x },
+          values: acc.values.concat([x])
+        }
+        : acc
+    },
+    { dict: {}, values: [] }
+  )
+
+  return acc.values
+}
 
 module.exports = {
   concat: (...a2) => a1 => a1.concat(...a2),
@@ -34,6 +51,7 @@ module.exports = {
   sum: (init = 0) => reduce((acc, x) => acc + x, init),
   buildLines: (init) => init
     ? reduce((acc, x) => acc + '\n' + x, init)
-    : join('\n')
+    : join('\n'),
 
+  uniq
 }

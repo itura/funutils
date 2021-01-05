@@ -1,3 +1,4 @@
+const { id, repeat } = require('../common')
 const { lazyReduce } = require('./common')
 const { integers } = require('../generators')
 
@@ -28,7 +29,7 @@ const LazySeq = (generator = integers, config = {}) => {
   const filter = (f) => {
     return LazySeq(_generator, {
       ...config,
-      fs: fs.concat(x => f(x) ? x : nil)
+      fs: fs.concat((x, uniqDict) => f(x, uniqDict) ? x : nil)
     })
   }
 
@@ -41,6 +42,18 @@ const LazySeq = (generator = integers, config = {}) => {
     })
   }
 
+  const uniq = (f = id) => {
+    return filter((x, uniqDict) => {
+      const comparisonValue = f(x)
+      const key = comparisonValue === null || comparisonValue === undefined ? '' : comparisonValue.toString()
+      if (!uniqDict[key] || key.match(/^\[object .*\]$/)) {
+        uniqDict[key] = x
+        return true
+      }
+      return false
+    })
+  }
+
   const reduce = (reducer, initial) => {
     return LazySeq(_generator, {
       ...config,
@@ -49,19 +62,23 @@ const LazySeq = (generator = integers, config = {}) => {
     })
   }
 
-  const take = lazyReduce({
-    generator: _generator,
-    fs,
-    reducer,
-    initial,
-    result: (fs, next) => fs.reduce(
-      (prev, f) => prev === nil ? nil : f(prev),
-      next
-    )
-  })
+  const take = n => {
+    const uniqDicts = repeat(fs.length, () => ({}))
+
+    return lazyReduce({
+      generator: _generator,
+      fs,
+      reducer,
+      initial,
+      result: (fs, next) => fs.reduce(
+        (prev, f, i) => prev === nil ? nil : f(prev, uniqDicts[i]),
+        next
+      )
+    })(n)
+  }
 
   return {
-    map, filter, compact, reduce, take
+    map, filter, compact, uniq, reduce, take
   }
 }
 

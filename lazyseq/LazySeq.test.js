@@ -150,6 +150,8 @@ describe('LazySeq', () => {
     expect(s1.take(3)).toEqual([0, 1, 2])
     expect(s2.take(3)).toEqual([1, 2, 3])
     expect(s3.take(3)).toEqual([null, 2, null])
+    expect(s3.take(3)).toEqual([null, 2, null])
+    expect(s4.take(3)).toEqual([2])
     expect(s4.take(3)).toEqual([2])
     expect(s5.take(3)).toEqual(2)
     expect(s6.take(3)).toEqual(-2)
@@ -158,5 +160,58 @@ describe('LazySeq', () => {
     expect(s3.take(3)).toEqual([null, 2, null])
     expect(s2.take(3)).toEqual([1, 2, 3])
     expect(s1.take(3)).toEqual([0, 1, 2])
+  })
+
+  describe('uniq', () => {
+    const primitives = LazySeq([1, 2, 2, 3, 4, 5, 3, 2, 6])
+    const objects = primitives.map(x => ({ num: x }))
+
+    it('returns unique primitives', () => {
+      const uniquePrimitives = primitives.uniq()
+      expect(uniquePrimitives.take(3)).toEqual([1, 2])
+      expect(uniquePrimitives.take(9)).toEqual([1, 2, 3, 4, 5, 6])
+    })
+
+    it('preserves null and undefined', () => {
+      expect(
+        LazySeq([1, null, 2, null, 2, undefined, 3])
+          .uniq()
+          .take(7)
+      ).toEqual([1, null, 2, null, undefined, 3])
+    })
+
+    it('returns all objects', () => {
+      expect(
+        objects
+          .take(3)
+      ).toEqual([{ num: 1 }, { num: 2 }, { num: 2 }])
+
+      expect(
+        objects
+          .uniq()
+          .take(3)
+      ).toEqual([{ num: 1 }, { num: 2 }, { num: 2 }])
+    })
+
+    it('applies a predicate if given', () => {
+      const uniqueObjects = objects.uniq(x => x.num)
+      expect(
+        uniqueObjects
+          .take(3)
+          .map(x => x.num)
+      ).toEqual([1, 2])
+      expect(
+        uniqueObjects
+          .take(9)
+          .map(x => x.num)
+      ).toEqual([1, 2, 3, 4, 5, 6])
+      expect(
+        uniqueObjects
+          .map(x => ({ num: x.num % 2 === 0 ? null : x.num }))
+          .uniq(x => x.num)
+          .take(9)
+          .map(x => x.num)
+      ).toEqual([1, null, 3, 5])
+    })
   })
 })
