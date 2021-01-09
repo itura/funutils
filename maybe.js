@@ -35,6 +35,9 @@ const Just = function (value) {
 }
 
 Just.prototype = Object.create(Maybe.prototype)
+Just.prototype.toString = function () {
+  return `maybe.Just ${this.value}`
+}
 
 const Nothing = function () {
   if (!(this instanceof Nothing)) {
@@ -43,6 +46,9 @@ const Nothing = function () {
 }
 
 Nothing.prototype = Object.create(Maybe.prototype)
+Nothing.prototype.toString = function () {
+  return 'maybe.Nothing'
+}
 
 const nothing = new Nothing()
 
