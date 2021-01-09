@@ -1,6 +1,4 @@
-export interface Transform<X, Y> {
-  (x: X): Y
-}
+export type Transform<X, Y> = (x: X) => Y
 
 export type Predicate<X> = Transform<X, boolean>
 
@@ -10,13 +8,15 @@ export type AsyncTransform<X, Y> = Transform<X | Promise<X>, Promise<Y>>
 
 export type PromiseCallback<X, Y> = Transform<X, Y | Promise<Y>>
 
-export interface Reducer<X, Y> {
-  (acc: Y, x: X): Y
-}
+export type Reducer<X, Y> = (acc: Y, x: X) => Y
 
-export interface Comparator <X> {
-  (a: X, b: X): number
-}
+export type Comparator<X> = (a: X, b: X) => number
+
+export type Supplier<X> = () => X
+
+export type Chain<X, Y> = (x?: X) => Y
+
+export type AsyncChain<X, Y> = Chain<X | Promise<X>, Promise<Y>>
 
 export declare function id<X> (x: X): X
 export declare function apply<X, Y> (f: Transform<X, Y>): Transform<X, Y>
@@ -25,29 +25,29 @@ export declare function tap<X> (f: SideEffect<X>): Transform<X, X>
 
 export declare function chain<X0, X1> (
   f0: Transform<X0, X1>
-): Transform<X0, X1>
+): Chain<X0, X1>
 export declare function chain<X0, X1, X2> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>
-): Transform<X0, X2>
+): Chain<X0, X2>
 export declare function chain<X0, X1, X2, X3> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
   f2: Transform<X2, X3>,
-): Transform<X0, X3>
+): Chain<X0, X3>
 export declare function chain<X0, X1, X2, X3, X4> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
   f2: Transform<X2, X3>,
   f3: Transform<X3, X4>,
-): Transform<X0, X4>
+): Chain<X0, X4>
 export declare function chain<X0, X1, X2, X3, X4, X5> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
   f2: Transform<X2, X3>,
   f3: Transform<X3, X4>,
   f4: Transform<X4, X5>,
-): Transform<X0, X5>
+): Chain<X0, X5>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -55,7 +55,7 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6> (
   f3: Transform<X3, X4>,
   f4: Transform<X4, X5>,
   f5: Transform<X5, X6>,
-): Transform<X0, X6>
+): Chain<X0, X6>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -64,7 +64,7 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7> (
   f4: Transform<X4, X5>,
   f5: Transform<X5, X6>,
   f6: Transform<X6, X7>,
-): Transform<X0, X7>
+): Chain<X0, X7>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -74,7 +74,7 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8> (
   f5: Transform<X5, X6>,
   f6: Transform<X6, X7>,
   f7: Transform<X7, X8>,
-): Transform<X0, X7>
+): Chain<X0, X7>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -85,7 +85,7 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9> (
   f6: Transform<X6, X7>,
   f7: Transform<X7, X8>,
   f8: Transform<X8, X9>,
-): Transform<X0, X9>
+): Chain<X0, X9>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -97,7 +97,7 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f7: Transform<X7, X8>,
   f8: Transform<X8, X9>,
   f9: Transform<X9, X10>,
-): Transform<X0, X10>
+): Chain<X0, X10>
 export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f0: Transform<X0, X1>,
   f1: Transform<X1, X2>,
@@ -111,34 +111,34 @@ export declare function chain<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f9: Transform<X9, X10>,
   f10: Transform<X10, any>,
   ...fs: Transform<any, any>[]
-): Transform<X0, any>
+): Chain<X0, any>
 
 export declare function applyP<X, Y> (p: Promise<X>): (f: PromiseCallback<X, Y>) => Promise<Y>
 export declare function chainP<X0, X1> (
   f0: PromiseCallback<X0, X1>
-): AsyncTransform<X0, X1>
+): AsyncChain<X0, X1>
 export declare function chainP<X0, X1, X2> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>
-): AsyncTransform<X0, X2>
+): AsyncChain<X0, X2>
 export declare function chainP<X0, X1, X2, X3> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
   f2: PromiseCallback<X2, X3>,
-): AsyncTransform<X0, X3>
+): AsyncChain<X0, X3>
 export declare function chainP<X0, X1, X2, X3, X4> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
   f2: PromiseCallback<X2, X3>,
   f3: PromiseCallback<X3, X4>,
-): AsyncTransform<X0, X4>
+): AsyncChain<X0, X4>
 export declare function chainP<X0, X1, X2, X3, X4, X5> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
   f2: PromiseCallback<X2, X3>,
   f3: PromiseCallback<X3, X4>,
   f4: PromiseCallback<X4, X5>,
-): AsyncTransform<X0, X5>
+): AsyncChain<X0, X5>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -146,7 +146,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6> (
   f3: PromiseCallback<X3, X4>,
   f4: PromiseCallback<X4, X5>,
   f5: PromiseCallback<X5, X6>,
-): AsyncTransform<X0, X6>
+): AsyncChain<X0, X6>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -155,7 +155,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7> (
   f4: PromiseCallback<X4, X5>,
   f5: PromiseCallback<X5, X6>,
   f6: PromiseCallback<X6, X7>,
-): AsyncTransform<X0, X7>
+): AsyncChain<X0, X7>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -165,7 +165,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8> (
   f5: PromiseCallback<X5, X6>,
   f6: PromiseCallback<X6, X7>,
   f7: PromiseCallback<X7, X8>,
-): AsyncTransform<X0, X7>
+): AsyncChain<X0, X7>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -176,7 +176,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9> (
   f6: PromiseCallback<X6, X7>,
   f7: PromiseCallback<X7, X8>,
   f8: PromiseCallback<X8, X9>,
-): AsyncTransform<X0, X9>
+): AsyncChain<X0, X9>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -188,7 +188,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f7: PromiseCallback<X7, X8>,
   f8: PromiseCallback<X8, X9>,
   f9: PromiseCallback<X9, X10>,
-): AsyncTransform<X0, X10>
+): AsyncChain<X0, X10>
 export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f0: PromiseCallback<X0, X1>,
   f1: PromiseCallback<X1, X2>,
@@ -202,7 +202,7 @@ export declare function chainP<X0, X1, X2, X3, X4, X5, X6, X7, X8, X9, X10> (
   f9: PromiseCallback<X9, X10>,
   f10: PromiseCallback<X10, any>,
   ...fs: PromiseCallback<any, any>[]
-): AsyncTransform<X0, any>
+): AsyncChain<X0, any>
 
 export declare function applyM<X, Y> (M: monads.Monad<X>): (f: Transform<any,Y>) => Transform<any, Y>
 export declare function chainM<X> (M: monads.Monad<X>): (...fs: Transform<any, any>[]) => Transform<any, any>
