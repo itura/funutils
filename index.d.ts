@@ -225,6 +225,12 @@ export interface BuilderConfig {
 }
 export declare function Builder<X> (factory: Transform<BuilderConfig, X>): (...fs: Transform<BuilderConfig, BuilderConfig>[]) => X
 
+export declare function lessThan<X> (x: X): Predicate<X>
+export declare function lessThanOrEqualTo<X> (x: X): Predicate<X>
+export declare function greaterThan<X> (x: X): Predicate<X>
+export declare function greaterThanOrEqualTo<X> (x: X): Predicate<X>
+export declare function equalTo<X> (x: X): Predicate<X>
+
 export module maybe {
   interface IMaybe<X> extends Functor<X> {
     map: <Y> (f: (x: X) => Y) => IMaybe<Y>
@@ -328,6 +334,8 @@ export module number {
   function toLocaleString (locale?: string, options?: LocaleOptions): string
   function toPrecision (digits?: number): string
   function toString(radix?: number): string
+  function isEven(n: number): boolean
+  function isOdd(n: number): boolean
 }
 
 export module generators {

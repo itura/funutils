@@ -82,6 +82,12 @@ const Builder = factory =>
     factory
   )(id)
 
+const lessThan = a => b => b < a
+const lessThanOrEqualTo = a => b => b <= a
+const greaterThan = a => b => b > a
+const greaterThanOrEqualTo = a => b => b >= a
+const equalTo = a => b => a === b
+
 module.exports = {
   apply,
   chain,
@@ -100,5 +106,10 @@ module.exports = {
   randomInt,
   repeat,
   sleep,
-  fail
+  fail,
+  lessThan,
+  lessThanOrEqualTo,
+  greaterThan,
+  greaterThanOrEqualTo,
+  equalTo
 }
