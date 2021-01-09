@@ -109,7 +109,7 @@ describe('funutils', () => {
 
   test('LazySeq', () => {
     const data = () => [1, 2, null, 3].values()
-    const seq = funutils.LazySeq(data)
+    const seq = funutils.lazyseq.LazySeq(data)
       .compact()
       .map(x => x + 1)
       .filter(x => x % 2 === 1)
@@ -124,7 +124,7 @@ describe('funutils', () => {
 
   test('LazySeqM', () => {
     const data = () => [1, 2, 3].values()
-    const seq = funutils.LazySeqM(funutils.monads.Maybe, data)
+    const seq = funutils.lazyseq.LazySeqM(funutils.monads.Maybe, data)
       .map(x => x + 1)
       .map(x => x % 2 === 1 ? x : null)
       .map(x => x.toString())

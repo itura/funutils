@@ -10,5 +10,5 @@ module.exports = {
   perf: require('./perf'),
   UserJourney: require('./UserJourney'),
   ...require('./common'),
-  ...require('./lazyseq')
+  lazyseq: require('./lazyseq')
 }
