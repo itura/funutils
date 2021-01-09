@@ -2,7 +2,7 @@
   "name": "@austin-garrard/funutils",
   "version": "2.0.0-alpha.0",
   "description": "Fun functional utilities for ES6",
-  "homepage": "https://github.com/austin-garrard/funutils",
+  "repository": "https://github.com/austin-garrard/funutils",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {

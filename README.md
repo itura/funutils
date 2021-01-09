@@ -2,7 +2,7 @@
 
 Fun functional utilities for ES6
 
-`npm install @austin-garrard/funutils`
+`npm install @austin-garrard/funutils@alpha`
 
 ## Examples
 
