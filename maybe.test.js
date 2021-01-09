@@ -1,7 +1,7 @@
 /* eslint-env jest */
 
 const maybe = require('./maybe')
-const { chain, compose } = require('./common')
+const { chain, compose, lessThan, greaterThanOrEqualTo, greaterThan, equalTo } = require('./common')
 
 describe('maybe', () => {
   it('do', () => {
@@ -162,43 +162,53 @@ describe('maybe', () => {
 
   describe('cases', () => {
     it('executes the effect of the first true condition', () => {
-      expect(maybe.cases(
-        [false, () => 1],
-        [true, () => 2],
-        [true, () => 3]
-      )).toEqual(maybe.Just(2))
+      expect(maybe.conditions(
+        [equalTo(1), x => x + 1],
+        [equalTo(2), x => x + 2],
+        [greaterThan(1), x => x + 3]
+      )(2)).toEqual(maybe.Just(4))
     })
 
     it('returns Nothing when none of the cases are true', () => {
-      expect(maybe.cases(
-        [false, () => 1],
-        [false, () => 2],
-        [false, () => 3]
-      )).toEqual(maybe.Nothing())
+      expect(maybe.conditions(
+        [() => false, () => 1],
+        [() => false, () => 2],
+        [() => false, () => 3]
+      )(1)).toEqual(maybe.Nothing())
     })
 
     it('nests cases', () => {
-      expect(maybe.cases(
-        [false, [
-          [true, () => 1]
+      expect(maybe.conditions(
+        [lessThan(3), [
+          [() => true, () => 1]
         ]],
-        [true, [
-          [false, () => 2],
-          [true, () => 3]
+        [greaterThanOrEqualTo(3), [
+          [greaterThan(5), () => 2],
+          [lessThan(5), x => x + 3]
         ]]
-      )).toEqual(maybe.Just(3))
+      )(3)).toEqual(maybe.Just(6))
+
+      expect(maybe.conditions(
+        [lessThan(3), maybe.conditions(
+          [() => true, () => 1]
+        )],
+        [greaterThanOrEqualTo(3), maybe.conditions(
+          [greaterThan(5), () => 2],
+          [lessThan(5), x => x + 3]
+        )]
+      )(3)).toEqual(maybe.Just(6))
     })
 
     it('nests cases when none of the conditions are true', () => {
-      expect(maybe.cases(
-        [false, [
-          [false, () => 1]
+      expect(maybe.conditions(
+        [() => false, [
+          [() => false, () => 1]
         ]],
-        [false, [
-          [false, () => 2],
-          [false, () => 3]
+        [() => false, [
+          [() => false, () => 2],
+          [() => false, () => 3]
         ]]
-      )).toEqual(maybe.Nothing())
+      )(1)).toEqual(maybe.Nothing())
     })
   })
 

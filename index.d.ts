@@ -255,8 +255,8 @@ export module maybe {
   function given<X> (...ms: IMaybe<any>[]): Transform<(...xs: any[]) => X, IMaybe<X>>
   function none<X> (...ms: IMaybe<any>[]): (f: () => X) => IMaybe<X>
 
-  type CasesSpec = [boolean, () => any] | [boolean, CasesSpec]
-  function cases (...specs: CasesSpec[]): IMaybe<any>
+  type ConditionsSpec<X, Y> = [Predicate<X>, Transform<X, Y> | ConditionsSpec<X, Y>]
+  function conditions<X, Y> (...specs: ConditionsSpec<X, Y>[]): Transform<X | IMaybe<X>, IMaybe<Y>>
 
   type Key = string | number
   function dig <X, Y> (...keys: Key[]): Transform<X, IMaybe<Y>>

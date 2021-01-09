@@ -104,16 +104,21 @@ const none = (...ms) => f =>
     })
   )(ms)
 
-const cases = (...specs) =>
-  array.reduce(
-    (result, [condition, effect]) => result.caseMap({
-      just: Maybe,
-      nothing: () => condition && Array.isArray(effect)
-        ? cases(...effect).caseMap({ just: Maybe })
-        : Maybe(condition && effect())
-    }),
-    nothing
-  )(specs)
+const conditions = (...specs) => chain(
+  Maybe,
+  caseMap({
+    just: v => specs.reduce(
+      (result, [condition, effect]) => result.caseMap({
+        just: Maybe,
+        nothing: () => Array.isArray(effect) && condition(v)
+          ? conditions(...effect)(v)
+          : Maybe(condition(v) && effect(v))
+      }),
+      nothing
+    ),
+    nothing: () => nothing
+  })
+)
 
 const dig = (...keys) => obj =>
   array.reduce(
@@ -138,7 +143,7 @@ module.exports = {
   isMaybe,
   given,
   none,
-  cases,
+  conditions,
   dig,
   toBoolean
 }
