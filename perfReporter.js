@@ -22,9 +22,7 @@ const displayNameText = chain(
     Colors(bg(Gray), fg(White)),
     result => ` ${result}`
   )),
-  maybe.unwrap({
-    nothing: () => ''
-  })
+  maybe.unwrapOr(() => '')
 )
 
 const PerfTestReporter = function () {}

@@ -12,54 +12,57 @@ describe('maybe', () => {
       maybe.Maybe,
       maybe.map(x => x.toString()),
       maybe.map(x => x.repeat(2)),
-      maybe.unwrap({
-        just: x => x + ':)',
-        nothing: () => ':('
-      })
+      maybe.map(x => x + ':)'),
+      maybe.unwrapOr(() => ':(')
     )
 
     expect(transform(1)).toEqual('11:)')
+    expect(transform(maybe.Just(1))).toEqual('11:)')
     expect(transform(null)).toEqual(':(')
-
-    expect(maybe.toBoolean(maybe.Just('hi'))).toEqual(true)
-    expect(maybe.Just('hi').toBoolean()).toEqual(true)
-    expect(maybe.toBoolean(maybe.Nothing())).toEqual(false)
-    expect(maybe.Nothing().toBoolean()).toEqual(false)
+    expect(transform(maybe.Nothing())).toEqual(':(')
 
     const transform1 = chain(
-      maybe.dig('key'),
-      maybe.map(x => x + '!'),
-      maybe.unwrap({
-        just: x => x.length,
-        nothing: () => -1
-      })
+      maybe.Maybe,
+      maybe.map(chain(
+        x => x.toString(),
+        x => x.repeat(2),
+        x => x + ':)'
+      )),
+      maybe.unwrapOr(() => ':(')
     )
 
-    expect(transform1({ key: 'hi' })).toEqual(3)
-    expect(transform1({ key: 'hello' })).toEqual(6)
-    expect(transform1({ key: null })).toEqual(-1)
-    expect(transform1({ notKey: 'hi' })).toEqual(-1)
-    expect(transform1(null)).toEqual(-1)
-    expect(transform1()).toEqual(-1)
+    expect(transform1(1)).toEqual(transform(1))
+    expect(transform1(null)).toEqual(transform(null))
+
+    const transform2 = chain(
+      maybe.dig('key'),
+      maybe.map(x => x + '!'),
+      maybe.map(x => x.length),
+      maybe.unwrapOr(() => -1)
+    )
+
+    expect(transform2({ key: 'hi' })).toEqual(3)
+    expect(transform2({ key: 'hello' })).toEqual(6)
+    expect(transform2({ woops: 'hello' })).toEqual(-1)
+    expect(transform2({ key: null })).toEqual(-1)
+    expect(transform2({ notKey: 'hi' })).toEqual(-1)
+    expect(transform2(null)).toEqual(-1)
+    expect(transform2()).toEqual(-1)
 
     expect(
       maybe.Maybe({ key: 'hi' })
         .dig('key')
         .map(x => x + '!')
-        .unwrap({
-          just: x => x.length,
-          nothing: () => -1
-        })
+        .map(x => x.length)
+        .unwrapOr(() => -1)
     ).toEqual(3)
 
     expect(
       maybe.Maybe({ key: 'hi' })
         .dig('woops')
         .map(x => x + '!')
-        .unwrap({
-          just: x => x.length,
-          nothing: () => -1
-        })
+        .map(x => x.length)
+        .unwrapOr(() => -1)
     ).toEqual(-1)
   })
 
@@ -99,10 +102,8 @@ describe('maybe', () => {
     const g = x => x - 9
     const f = x => x * 2
 
-    expect(just.map(compose(f)(g)))
-      .toStrictEqual(just.map(g).map(f))
-    expect(nothing.map(compose(f)(g)))
-      .toStrictEqual(nothing.map(g).map(f))
+    expect(just.map(compose(f)(g))).toStrictEqual(just.map(g).map(f))
+    expect(nothing.map(compose(f)(g))).toStrictEqual(nothing.map(g).map(f))
     expect(just.map(() => undefined)).toStrictEqual(maybe.Nothing())
     expect(just.map(x => x + 1)).toStrictEqual(maybe.Just(9))
     expect(just.map(x => maybe.Just(x + 1))).toStrictEqual(maybe.Just(9))
@@ -158,12 +159,25 @@ describe('maybe', () => {
     })
   })
 
+  describe('toBoolean', () => {
+    expect(maybe.toBoolean(maybe.Just('hi'))).toEqual(true)
+    expect(maybe.Just('hi').toBoolean()).toEqual(true)
+    expect(maybe.toBoolean(maybe.Nothing())).toEqual(false)
+    expect(maybe.Nothing().toBoolean()).toEqual(false)
+  })
+
   describe('given', () => {
     it('applies the function when all Maybes are Justs', () => {
       expect(
         maybe.given(m1, m2)((v1, v2) => `${v1} ${v2}`)
       ).toEqual(
         maybe.Just('hi there')
+      )
+
+      expect(
+        maybe.given(m1, m2)((v1, v2) => null)
+      ).toEqual(
+        maybe.Nothing()
       )
     })
 
@@ -182,6 +196,12 @@ describe('maybe', () => {
         maybe.none(m3, maybe.Nothing())(() => 'hi there')
       ).toEqual(
         maybe.Just('hi there')
+      )
+
+      expect(
+        maybe.none(m3, maybe.Nothing())(() => null)
+      ).toEqual(
+        maybe.Nothing()
       )
     })
 

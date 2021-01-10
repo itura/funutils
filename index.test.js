@@ -4,22 +4,117 @@ const funutils = require('./')
 
 describe('funutils', () => {
   describe('common', () => {
-    test('chain w/ Array', () => {
-      const { map, filter, flat, compact, reduce } = funutils.array
+    test('chain w/ array', () => {
+      const { chain, array } = funutils
 
       expect(
-        funutils.chain(
-          map(x => x + 1),
-          filter(x => x % 2 === 1),
-          map(x => [x, null]),
-          flat(),
-          compact(),
-          reduce(
+        chain(
+          array.map(x => x + 1),
+          array.filter(x => x % 2 === 1),
+          array.map(x => [x, null]),
+          array.flat(),
+          array.compact(),
+          array.reduce(
             (acc, x) => acc + (x === null ? 2 : x),
             0
           )
         )([1, 2, 3])
       ).toEqual(3)
+    })
+
+    test('chain w/ string', () => {
+      const { array, string, chain } = funutils
+
+      expect(
+        chain(
+          string.repeat(4),
+          string.split('!'),
+          chain(
+            array.filter(string.includes('hi')),
+            array.filter(string.match(/hi/)),
+            array.map(chain(
+              string.toUpperCase(),
+              string.padEnd(4)
+            )),
+            array.join('!')
+          )
+        )('hi!')
+      ).toEqual(
+        'HI  !HI  !HI  !HI  '
+      )
+    })
+
+    test('chain w/ maybe', () => {
+      const { maybe, string, number, chain, chainF } = funutils
+
+      const transform = chain(
+        maybe.Maybe,
+        maybe.map(string.repeat(2)),
+        maybe.map(x => x[2]),
+        maybe.unwrapOr(() => ':(')
+      )
+
+      expect(transform('ab')).toEqual('a')
+      expect(transform(maybe.Just('ab'))).toEqual('a')
+      expect(transform('a')).toEqual(':(')
+      expect(transform(maybe.Just('a'))).toEqual(':(')
+      expect(transform(null)).toEqual(':(')
+      expect(transform()).toEqual(':(')
+      expect(transform(maybe.Nothing())).toEqual(':(')
+
+      const transform1 = chain(
+        maybe.map(x => x + 1),
+        maybe.map(number.toString()),
+        maybe.map(string.repeat(2)),
+        maybe.unwrapOr(() => ':(')
+      )
+
+      expect(() => transform1(0)).toThrow('funutils.maybe: not a Maybe: \'0\'')
+      expect(transform1(maybe.Maybe(0))).toEqual('11')
+      expect(transform1(maybe.Truthy(0))).toEqual(':(')
+      expect(transform1(maybe.Just(1))).toEqual('22')
+      expect(transform1(maybe.Nothing())).toEqual(':(')
+
+      const transform2 = chain(
+        maybe.map(chain(
+          x => x + 1,
+          number.toString(),
+          string.repeat(2)
+        )),
+        maybe.unwrapOr(() => ':(')
+      )
+
+      expect(() => transform2(0)).toThrow('funutils.maybe: not a Maybe: \'0\'')
+      expect(transform2(maybe.Maybe(0))).toEqual('11')
+      expect(transform2(maybe.Truthy(0))).toEqual(':(')
+      expect(transform2(maybe.Just(1))).toEqual('22')
+      expect(transform2(maybe.Nothing())).toEqual(':(')
+
+      const transform3 = chain(
+        chainF(
+          x => x + 1,
+          number.toString(),
+          string.repeat(2)
+        ),
+        maybe.unwrapOr(() => ':(')
+      )
+
+      expect(() => transform3(0)).toThrow('F.map is not a function')
+      expect(transform3(maybe.Maybe(0))).toEqual('11')
+      expect(transform3(maybe.Truthy(0))).toEqual(':(')
+      expect(transform3(maybe.Just(1))).toEqual('22')
+      expect(transform3(maybe.Nothing())).toEqual(':(')
+
+      const transform4 = chain(
+        maybe.dig('key'),
+        maybe.map(x => x + '!'),
+        maybe.map(x => x.length),
+        maybe.unwrapOr(() => -1)
+      )
+
+      expect(transform4({ key: 'hi' })).toEqual(3)
+      expect(transform4({ woops: 'hello' })).toEqual(-1)
+      expect(transform4()).toEqual(-1)
     })
 
     test('functor utilities', () => {
@@ -105,6 +200,34 @@ describe('funutils', () => {
     expect(
       Nothing().map(funutils.string.repeat(2))
     ).toEqual(Nothing())
+
+    expect(
+      Just('hi')
+        .map(funutils.string.repeat(2))
+        .unwrapOr(() => ':(')
+    ).toEqual('hihi')
+    expect(
+      Nothing()
+        .map(funutils.string.repeat(2))
+        .unwrapOr(() => ':(')
+    ).toEqual(':(')
+
+    const obj = Just({ key: 'hi' })
+    expect(
+      obj
+        .dig('key')
+        .map(x => x + '!')
+        .map(x => x.length)
+        .unwrapOr(() => -1)
+    ).toEqual(3)
+
+    expect(
+      obj
+        .dig('woops')
+        .map(x => x + '!')
+        .map(x => x.length)
+        .unwrapOr(() => -1)
+    ).toEqual(-1)
   })
 
   test('LazySeq', () => {
@@ -247,28 +370,6 @@ describe('funutils', () => {
 
     expect(durationMs).toBeGreaterThanOrEqual(50)
     expect(result).toEqual('wow so fast')
-  })
-
-  test('string', () => {
-    const { array, string } = funutils
-
-    expect(
-      funutils.chain(
-        string.repeat(4),
-        string.split('!'),
-        funutils.chain(
-          array.filter(string.includes('hi')),
-          array.filter(string.match(/hi/)),
-          array.map(funutils.chain(
-            string.toUpperCase(),
-            string.padEnd(4)
-          )),
-          array.join('!')
-        )
-      )('hi!')
-    ).toEqual(
-      'HI  !HI  !HI  !HI  '
-    )
   })
 
   test('number', () => {

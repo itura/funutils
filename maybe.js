@@ -16,6 +16,9 @@ Maybe.prototype = {
   unwrap: function (cases) {
     return unwrap(cases)(this)
   },
+  unwrapOr: function (f) {
+    return unwrapOr(f)(this)
+  },
   dig: function (...keys) {
     return dig(...keys)(this)
   },
@@ -79,6 +82,10 @@ const map = f => unwrap({
   nothing: () => nothing
 })
 
+const unwrapOr = f => unwrap({
+  nothing: () => f()
+})
+
 const given = (...ms) => f =>
   chain(
     array.reduce(
@@ -88,10 +95,7 @@ const given = (...ms) => f =>
       Just([])
     ),
 
-    unwrap({
-      just: args => Just(f(...args)),
-      nothing: () => nothing
-    })
+    map(args => f(...args))
   )(ms)
 
 const none = (...ms) => f =>
@@ -106,7 +110,7 @@ const none = (...ms) => f =>
 
     unwrap({
       just: () => nothing,
-      nothing: () => Just(f())
+      nothing: () => Maybe(f())
     })
   )(ms)
 
@@ -147,6 +151,7 @@ module.exports = {
   Nothing,
   unwrap,
   map,
+  unwrapOr,
   isMaybe,
   given,
   none,

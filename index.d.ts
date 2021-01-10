@@ -234,14 +234,15 @@ export declare function equalTo<X> (x: X): Predicate<X>
 export module maybe {
   interface IMaybe<X> extends Functor<X> {
     map: <Y> (f: (x: X) => Y) => IMaybe<Y>
-    unwrap: (cases: Cases) => any
+    unwrap: <Y> (cases: Cases<X, Y>) => Y
+    unwrapOr: <Y> (f: Supplier<Y>) => Y
     dig: <Y> (...keys: string[]) => IMaybe<Y>
     toBoolean: () => boolean
   }
 
-  interface Cases {
-    just?: (x: any) => any
-    nothing: () => any
+  interface Cases<X, Y> {
+    just?: (x: X) => Y
+    nothing: () => Y
   }
 
   function Maybe<X> (x: X): IMaybe<X>
@@ -249,7 +250,8 @@ export module maybe {
   function Nothing (): IMaybe<void>
   function isMaybe (x: any): boolean
   function map<X, Y> (f: Transform<X, Y>): Transform<IMaybe<X>, IMaybe<Y>>
-  function unwrap<X, Y = any> (cases: Cases): Transform<IMaybe<X>, Y>
+  function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IMaybe<X>, Y>
+  function unwrapOr<X, Y> (f: Supplier<Y>): Transform<IMaybe<X>, Y>
   function toBoolean (m: IMaybe<any>): boolean
 
   function given<X> (...ms: IMaybe<any>[]): Transform<(...xs: any[]) => X, IMaybe<X>>
@@ -331,9 +333,9 @@ export module number {
   interface LocaleOptions {
     [key: string]: any
   }
-  function toLocaleString (locale?: string, options?: LocaleOptions): string
-  function toPrecision (digits?: number): string
-  function toString(radix?: number): string
+  function toLocaleString (locale?: string, options?: LocaleOptions): Transform<number, string>
+  function toPrecision (digits?: number): Transform<number, string>
+  function toString(radix?: number): Transform<number, string>
   function isEven(n: number): boolean
   function isOdd(n: number): boolean
 }
