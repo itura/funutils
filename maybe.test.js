@@ -1,28 +1,32 @@
 /* eslint-env jest */
 
 const maybe = require('./maybe')
-const { chain, compose, lessThan, greaterThanOrEqualTo, greaterThan, equalTo } = require('./common')
+const { id, chain, compose, lessThan, greaterThanOrEqualTo, greaterThan, equalTo } = require('./common')
 
 describe('maybe', () => {
   it('do', () => {
-    const nothing = maybe.Nothing()
-    const just = maybe.Just('hi')
-    const id = x => x
+    expect(maybe.Just('hi').map(id)).toStrictEqual(maybe.Just('hi'))
+    expect(maybe.Nothing().map(id)).toStrictEqual(maybe.Nothing())
 
-    expect(nothing.map(id)).toStrictEqual(maybe.Nothing())
-    expect(just.map(id)).toStrictEqual(maybe.Just('hi'))
+    const transform = chain(
+      maybe.Maybe,
+      maybe.map(x => x.toString()),
+      maybe.map(x => x.repeat(2)),
+      maybe.caseMap({
+        just: x => x + ':)',
+        nothing: () => ':('
+      })
+    )
 
-    expect(maybe.Maybe('hi')).toStrictEqual(maybe.Just('hi'))
-    expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
-    expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing())
-    expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing())
+    expect(transform(1)).toEqual('11:)')
+    expect(transform(null)).toEqual(':(')
 
     expect(maybe.toBoolean(maybe.Just('hi'))).toEqual(true)
     expect(maybe.Just('hi').toBoolean()).toEqual(true)
     expect(maybe.toBoolean(maybe.Nothing())).toEqual(false)
     expect(maybe.Nothing().toBoolean()).toEqual(false)
 
-    const transform = chain(
+    const transform1 = chain(
       maybe.dig('key'),
       maybe.map(x => x + '!'),
       maybe.caseMap({
@@ -31,12 +35,12 @@ describe('maybe', () => {
       })
     )
 
-    expect(transform({ key: 'hi' })).toEqual(3)
-    expect(transform({ key: 'hello' })).toEqual(6)
-    expect(transform({ key: null })).toEqual(-1)
-    expect(transform({ notKey: 'hi' })).toEqual(-1)
-    expect(transform(null)).toEqual(-1)
-    expect(transform()).toEqual(-1)
+    expect(transform1({ key: 'hi' })).toEqual(3)
+    expect(transform1({ key: 'hello' })).toEqual(6)
+    expect(transform1({ key: null })).toEqual(-1)
+    expect(transform1({ notKey: 'hi' })).toEqual(-1)
+    expect(transform1(null)).toEqual(-1)
+    expect(transform1()).toEqual(-1)
 
     expect(
       maybe.Maybe({ key: 'hi' })
@@ -49,14 +53,44 @@ describe('maybe', () => {
     ).toEqual(3)
 
     expect(
-      maybe.Maybe({ key: null })
-        .dig('key')
+      maybe.Maybe({ key: 'hi' })
+        .dig('woops')
         .map(x => x + '!')
         .caseMap({
           just: x => x.length,
           nothing: () => -1
         })
     ).toEqual(-1)
+  })
+
+  it('can be constructed with Maybe', () => {
+    expect(maybe.Maybe('hi')).toStrictEqual(maybe.Just('hi'))
+    expect(maybe.Maybe({})).toStrictEqual(maybe.Just({}))
+    expect(maybe.Maybe(true)).toStrictEqual(maybe.Just(true))
+    expect(maybe.Maybe(0)).toStrictEqual(maybe.Just(0))
+    expect(maybe.Maybe(-0)).toStrictEqual(maybe.Just(-0))
+    expect(maybe.Maybe([])).toStrictEqual(maybe.Just([]))
+    expect(maybe.Maybe('')).toStrictEqual(maybe.Just(''))
+    expect(maybe.Maybe(0n)).toStrictEqual(maybe.Just(0n))
+    expect(maybe.Maybe(NaN)).toStrictEqual(maybe.Just(NaN))
+    expect(maybe.Maybe(false)).toStrictEqual(maybe.Just(false))
+    expect(maybe.Maybe(null)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Maybe(undefined)).toStrictEqual(maybe.Nothing())
+  })
+
+  it('can be constructed with Truthy', () => {
+    expect(maybe.Truthy('hi')).toStrictEqual(maybe.Just('hi'))
+    expect(maybe.Truthy({})).toStrictEqual(maybe.Just({}))
+    expect(maybe.Truthy(true)).toStrictEqual(maybe.Just(true))
+    expect(maybe.Truthy(0)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(-0)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy([])).toStrictEqual(maybe.Just([]))
+    expect(maybe.Truthy('')).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(0n)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(NaN)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(false)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(null)).toStrictEqual(maybe.Nothing())
+    expect(maybe.Truthy(undefined)).toStrictEqual(maybe.Nothing())
   })
 
   it('is a functor', () => {
@@ -209,6 +243,16 @@ describe('maybe', () => {
           [() => false, () => 3]
         ]]
       )(1)).toEqual(maybe.Nothing())
+
+      expect(maybe.conditions(
+        [lessThan(3), maybe.conditions(
+          [() => true, () => 1]
+        )],
+        [greaterThanOrEqualTo(3), maybe.conditions(
+          [() => false, () => 2],
+          [() => false, x => x + 3]
+        )]
+      )(3)).toEqual(maybe.Nothing())
     })
   })
 

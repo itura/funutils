@@ -100,10 +100,10 @@ describe('funutils', () => {
     expect(Maybe('hi')).toEqual(Just('hi'))
     expect(Maybe(null)).toEqual(Nothing())
     expect(
-      Just('hi').map(funutils.id)
-    ).toEqual(Just('hi'))
+      Just('hi').map(funutils.string.repeat(2))
+    ).toEqual(Just('hihi'))
     expect(
-      Nothing().map(funutils.id)
+      Nothing().map(funutils.string.repeat(2))
     ).toEqual(Nothing())
   })
 
@@ -164,17 +164,20 @@ describe('funutils', () => {
       funutils.chainM(monads.Something)(id, id)(1)
     ).toEqual(1)
 
-    const m1 = funutils.composeM(monads.FlatSequence)(monads.Maybe)
-    const m2 = monads.Something
     const data = [[1, 2], null, [4], 5]
 
+    const m1 = funutils.composeM(monads.FlatSequence)(monads.Maybe)
     expect(
       funutils.chainM(m1)(id)(data)
     ).toEqual([1, 2, funutils.maybe.Nothing(), 4, 5])
 
+    const m2 = monads.Something
     expect(
       funutils.chainM(m2)(id)(data)
     ).toEqual([1, 2, 4, 5])
+    expect(
+      funutils.chainM(m2)(id, funutils.number.toString())(data)
+    ).toEqual(['1', '2', '4', '5'])
   })
 
   test('generators', () => {

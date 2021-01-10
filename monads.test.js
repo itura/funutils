@@ -11,11 +11,11 @@ describe('Maybe', () => {
 
     expect(result(0)).toEqual(0)
     expect(result([])).toEqual([])
+    expect(result('')).toEqual('')
 
     expect(result(Nothing())).toEqual(Nothing())
     expect(result(null)).toEqual(Nothing())
     expect(result(undefined)).toEqual(Nothing())
-    expect(result('')).toEqual(Nothing())
   })
 
   it('safely chains functions', () => {
@@ -26,11 +26,11 @@ describe('Maybe', () => {
 
     expect(result(0)).toEqual('0')
     expect(result([])).toEqual('')
+    expect(result('')).toEqual('')
 
     expect(result(Nothing())).toEqual(Nothing())
     expect(result(null)).toEqual(Nothing())
     expect(result(undefined)).toEqual(Nothing())
-    expect(result('')).toEqual(Nothing())
   })
 
   it('monad law 1', () => {

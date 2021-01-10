@@ -4,9 +4,9 @@ const { id, chain } = require('./common')
 const Maybe = function (x) {
   return isMaybe(x)
     ? x
-    : x || x === 0
-      ? Just(x)
-      : nothing
+    : x === null || x === undefined
+      ? nothing
+      : Just(x)
 }
 
 Maybe.prototype = {
@@ -23,6 +23,13 @@ Maybe.prototype = {
     return toBoolean(this)
   }
 }
+
+const Truthy = x =>
+  isMaybe(x)
+    ? x
+    : x
+      ? Just(x)
+      : nothing
 
 const isMaybe = x => x instanceof Maybe
 
@@ -75,10 +82,9 @@ const map = f => caseMap({
 const given = (...ms) => f =>
   chain(
     array.reduce(
-      (maybeArgs, m) => m.caseMap({
-        just: v => maybeArgs.map(args => args.concat(v)),
-        nothing: () => nothing
-      }),
+      (maybeArgs, m) => maybeArgs.map(
+        args => m.map(v => args.concat(v))
+      ),
       Just([])
     ),
 
@@ -112,7 +118,7 @@ const conditions = (...specs) => chain(
         just: Maybe,
         nothing: () => Array.isArray(effect) && condition(v)
           ? conditions(...effect)(v)
-          : Maybe(condition(v) && effect(v))
+          : condition(v) ? Maybe(effect(v)) : nothing
       }),
       nothing
     ),
@@ -136,6 +142,7 @@ const toBoolean = caseMap({
 
 module.exports = {
   Maybe,
+  Truthy,
   Just,
   Nothing,
   caseMap,
