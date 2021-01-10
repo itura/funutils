@@ -234,7 +234,7 @@ export declare function equalTo<X> (x: X): Predicate<X>
 export module maybe {
   interface IMaybe<X> extends Functor<X> {
     map: <Y> (f: (x: X) => Y) => IMaybe<Y>
-    caseMap: (cases: Cases) => any
+    unwrap: (cases: Cases) => any
     dig: <Y> (...keys: string[]) => IMaybe<Y>
     toBoolean: () => boolean
   }
@@ -249,7 +249,7 @@ export module maybe {
   function Nothing (): IMaybe<void>
   function isMaybe (x: any): boolean
   function map<X, Y> (f: Transform<X, Y>): Transform<IMaybe<X>, IMaybe<Y>>
-  function caseMap<X, Y = any> (cases: Cases): Transform<IMaybe<X>, Y>
+  function unwrap<X, Y = any> (cases: Cases): Transform<IMaybe<X>, Y>
   function toBoolean (m: IMaybe<any>): boolean
 
   function given<X> (...ms: IMaybe<any>[]): Transform<(...xs: any[]) => X, IMaybe<X>>

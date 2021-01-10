@@ -12,7 +12,7 @@ describe('maybe', () => {
       maybe.Maybe,
       maybe.map(x => x.toString()),
       maybe.map(x => x.repeat(2)),
-      maybe.caseMap({
+      maybe.unwrap({
         just: x => x + ':)',
         nothing: () => ':('
       })
@@ -29,7 +29,7 @@ describe('maybe', () => {
     const transform1 = chain(
       maybe.dig('key'),
       maybe.map(x => x + '!'),
-      maybe.caseMap({
+      maybe.unwrap({
         just: x => x.length,
         nothing: () => -1
       })
@@ -46,7 +46,7 @@ describe('maybe', () => {
       maybe.Maybe({ key: 'hi' })
         .dig('key')
         .map(x => x + '!')
-        .caseMap({
+        .unwrap({
           just: x => x.length,
           nothing: () => -1
         })
@@ -56,7 +56,7 @@ describe('maybe', () => {
       maybe.Maybe({ key: 'hi' })
         .dig('woops')
         .map(x => x + '!')
-        .caseMap({
+        .unwrap({
           just: x => x.length,
           nothing: () => -1
         })
@@ -127,7 +127,7 @@ describe('maybe', () => {
     })
   })
 
-  describe('caseMap', () => {
+  describe('unwrap', () => {
     const cases = {
       just: v => v + '!',
       nothing: () => 'bye'
@@ -135,25 +135,25 @@ describe('maybe', () => {
 
     describe('when value is a Just', () => {
       it('applies the just case', () => {
-        expect(maybe.caseMap(cases)(m1)).toEqual('hi!')
-        expect(m1.caseMap(cases)).toEqual('hi!')
+        expect(maybe.unwrap(cases)(m1)).toEqual('hi!')
+        expect(m1.unwrap(cases)).toEqual('hi!')
       })
 
       it('unwraps the value by default', () => {
-        expect(maybe.caseMap({})(m1)).toEqual('hi')
-        expect(m1.caseMap({})).toEqual('hi')
+        expect(maybe.unwrap({})(m1)).toEqual('hi')
+        expect(m1.unwrap({})).toEqual('hi')
       })
     })
 
     describe('when value is a Nothing', () => {
       it('applies the nothing case', () => {
-        expect(maybe.caseMap(cases)(m3)).toEqual('bye')
-        expect(m3.caseMap(cases)).toEqual('bye')
+        expect(maybe.unwrap(cases)(m3)).toEqual('bye')
+        expect(m3.unwrap(cases)).toEqual('bye')
       })
 
       it('throws an error when no error case is given', () => {
-        expect(() => maybe.caseMap({})(m3)).toThrow('funutils.maybe: unhandled Nothing')
-        expect(() => m3.caseMap({})).toThrow('funutils.maybe: unhandled Nothing')
+        expect(() => maybe.unwrap({})(m3)).toThrow('funutils.maybe: unhandled Nothing')
+        expect(() => m3.unwrap({})).toThrow('funutils.maybe: unhandled Nothing')
       })
     })
   })

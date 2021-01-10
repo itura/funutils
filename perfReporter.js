@@ -17,12 +17,12 @@ const skippedCheck = Colors(bold)('◻︎')
 
 const displayNameText = chain(
   maybe.dig('context', 'config', 'displayName'),
-  maybe.caseMap({
-    just: chain(
-      displayName => `  ${displayName.name}  `,
-      Colors(bg(Gray), fg(White)),
-      result => ` ${result}`
-    ),
+  maybe.map(chain(
+    displayName => `  ${displayName.name}  `,
+    Colors(bg(Gray), fg(White)),
+    result => ` ${result}`
+  )),
+  maybe.unwrap({
     nothing: () => ''
   })
 )

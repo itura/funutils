@@ -13,8 +13,8 @@ Maybe.prototype = {
   map: function (f) {
     return map(f)(this)
   },
-  caseMap: function (cases) {
-    return caseMap(cases)(this)
+  unwrap: function (cases) {
+    return unwrap(cases)(this)
   },
   dig: function (...keys) {
     return dig(...keys)(this)
@@ -59,7 +59,7 @@ Nothing.prototype.toString = function () {
 
 const nothing = new Nothing()
 
-const caseMap = cases => maybe => {
+const unwrap = cases => maybe => {
   if (maybe instanceof Just) {
     return cases.just ? cases.just(maybe.value) : maybe.value
   }
@@ -74,7 +74,7 @@ const caseMap = cases => maybe => {
   throw new TypeError(`funutils.maybe: not a Maybe: '${maybe}'`)
 }
 
-const map = f => caseMap({
+const map = f => unwrap({
   just: value => Maybe(f(value)),
   nothing: () => nothing
 })
@@ -88,7 +88,7 @@ const given = (...ms) => f =>
       Just([])
     ),
 
-    caseMap({
+    unwrap({
       just: args => Just(f(...args)),
       nothing: () => nothing
     })
@@ -97,14 +97,14 @@ const given = (...ms) => f =>
 const none = (...ms) => f =>
   chain(
     array.reduce(
-      (maybeArgs, m) => m.caseMap({
+      (maybeArgs, m) => m.unwrap({
         just: () => m,
         nothing: () => maybeArgs.map(id)
       }),
       nothing
     ),
 
-    caseMap({
+    unwrap({
       just: () => nothing,
       nothing: () => Just(f())
     })
@@ -112,9 +112,9 @@ const none = (...ms) => f =>
 
 const conditions = (...specs) => chain(
   Maybe,
-  caseMap({
+  unwrap({
     just: v => specs.reduce(
-      (result, [condition, effect]) => result.caseMap({
+      (result, [condition, effect]) => result.unwrap({
         just: Maybe,
         nothing: () => Array.isArray(effect) && condition(v)
           ? conditions(...effect)(v)
@@ -128,14 +128,14 @@ const conditions = (...specs) => chain(
 
 const dig = (...keys) => obj =>
   array.reduce(
-    (result, key) => result.caseMap({
+    (result, key) => result.unwrap({
       just: r => Maybe(r[key]),
       nothing: () => nothing
     }),
     Maybe(obj)
   )(keys)
 
-const toBoolean = caseMap({
+const toBoolean = unwrap({
   just: () => true,
   nothing: () => false
 })
@@ -145,7 +145,7 @@ module.exports = {
   Truthy,
   Just,
   Nothing,
-  caseMap,
+  unwrap,
   map,
   isMaybe,
   given,
