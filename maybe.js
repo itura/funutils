@@ -9,7 +9,14 @@ const Maybe = function (x) {
       : Just(x)
 }
 
-Maybe.prototype = {
+const Truthy = x =>
+  isMaybe(x)
+    ? x
+    : x
+      ? Just(x)
+      : nothing
+
+const maybeMethods = {
   map: function (f) {
     return map(f)(this)
   },
@@ -27,14 +34,7 @@ Maybe.prototype = {
   }
 }
 
-const Truthy = x =>
-  isMaybe(x)
-    ? x
-    : x
-      ? Just(x)
-      : nothing
-
-const isMaybe = x => x instanceof Maybe
+const isMaybe = x => x instanceof Just || x instanceof Nothing
 
 const Just = function (value) {
   if (!(this instanceof Just)) {
@@ -44,9 +44,11 @@ const Just = function (value) {
   this.value = value
 }
 
-Just.prototype = Object.create(Maybe.prototype)
-Just.prototype.toString = function () {
-  return `maybe.Just ${this.value}`
+Just.prototype = {
+  ...maybeMethods,
+  toString: function () {
+    return `maybe.Just ${this.value}`
+  }
 }
 
 const Nothing = function () {
@@ -55,11 +57,12 @@ const Nothing = function () {
   }
 }
 
-Nothing.prototype = Object.create(Maybe.prototype)
-Nothing.prototype.toString = function () {
-  return 'maybe.Nothing'
+Nothing.prototype = {
+  ...maybeMethods,
+  toString: function () {
+    return 'maybe.Nothing'
+  }
 }
-
 const nothing = new Nothing()
 
 const unwrap = cases => maybe => {
@@ -101,10 +104,10 @@ const given = (...ms) => f =>
 const none = (...ms) => f =>
   chain(
     array.reduce(
-      (maybeArgs, m) => m.unwrap({
+      (maybeArgs, m) => unwrap({
         just: () => m,
         nothing: () => maybeArgs.map(id)
-      }),
+      })(m),
       nothing
     ),
 
@@ -118,12 +121,12 @@ const conditions = (...specs) => chain(
   Maybe,
   unwrap({
     just: v => specs.reduce(
-      (result, [condition, effect]) => result.unwrap({
+      (result, [condition, effect]) => unwrap({
         just: Maybe,
         nothing: () => Array.isArray(effect) && condition(v)
           ? conditions(...effect)(v)
           : condition(v) ? Maybe(effect(v)) : nothing
-      }),
+      })(result),
       nothing
     ),
     nothing: () => nothing
@@ -132,10 +135,10 @@ const conditions = (...specs) => chain(
 
 const dig = (...keys) => obj =>
   array.reduce(
-    (result, key) => result.unwrap({
+    (result, key) => unwrap({
       just: r => Maybe(r[key]),
       nothing: () => nothing
-    }),
+    })(result),
     Maybe(obj)
   )(keys)
 

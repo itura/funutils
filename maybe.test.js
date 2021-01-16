@@ -58,8 +58,8 @@ describe('maybe', () => {
     ).toEqual(3)
 
     expect(
-      maybe.Maybe({ key: 'hi' })
-        .dig('woops')
+      maybe.Maybe({ woops: 'hi' })
+        .dig('key')
         .map(x => x + '!')
         .map(x => x.length)
         .unwrapOr(() => -1)

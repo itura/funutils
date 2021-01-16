@@ -1,6 +1,7 @@
 const { apply, composeM, id, chain } = require('./common')
 const { map, flat, filter } = require('./array')
 const maybe = require('./maybe')
+const result = require('./result')
 
 const IdMonad = {
   unit: id,
@@ -12,6 +13,14 @@ const MaybeMonad = {
   bind: f => maybe.unwrap({
     just: apply(f),
     nothing: maybe.Nothing
+  })
+}
+
+const ResultMonad = {
+  unit: result.Result,
+  bind: f => result.unwrap({
+    success: apply(f),
+    failure: result.Failure
   })
 }
 
@@ -49,6 +58,7 @@ const SomethingMonad = composeM(NotNothingMonad)(MaybeMonad)
 module.exports = {
   Id: IdMonad,
   Maybe: MaybeMonad,
+  Result: ResultMonad,
   Sequence: SequenceMonad,
   FlatSequence: SequenceMonad(),
   Something: SomethingMonad

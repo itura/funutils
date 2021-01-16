@@ -4,6 +4,7 @@ const monads = require('./monads')
 const { applyM, chainM, composeM } = require('./common')
 const { Maybe, Just, Nothing } = require('./maybe')
 const { compose, id } = require('./common')
+const result = require('./result')
 
 describe('Maybe', () => {
   it('applies identity', () => {
@@ -49,10 +50,9 @@ describe('Maybe', () => {
     const unit = monads.Maybe.unit
     const bind = monads.Maybe.bind
     const lhs = bind(unit)
-    const rhs = id
+    const rhs = Maybe
 
     expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
-    expect(lhs(Maybe(null))).toEqual(rhs(Nothing())) // ?
     expect(lhs(Nothing())).toEqual(rhs(Nothing()))
   })
 
@@ -64,8 +64,62 @@ describe('Maybe', () => {
     const rhs = bind(compose(bind(g))(f))
 
     expect(lhs(Maybe(1))).toEqual(rhs(Just(1)))
-    expect(lhs(Maybe(null))).toEqual(rhs(Nothing())) // ?
     expect(lhs(Nothing())).toEqual(rhs(Nothing()))
+  })
+})
+
+describe('Result', () => {
+  it('monad law 1', () => {
+    const { unit, bind } = monads.Result
+    const f = result.Result
+    const lhs = compose(bind(f))(unit)
+    const rhs = f
+
+    expect(lhs(1)).toStrictEqual(rhs(1))
+    expect(lhs(null)).toStrictEqual(rhs(null))
+
+    const leftSuccess = lhs(result.Success('hi'))
+    const rightSuccess = rhs(result.Success('hi'))
+    expect(leftSuccess).toEqual(rightSuccess)
+    expect(leftSuccess).toBeInstanceOf(result.Success)
+    expect(rightSuccess).toBeInstanceOf(result.Success)
+
+    const leftFailure = lhs(result.Failure('hi'))
+    const rightFailure = rhs(result.Failure('hi'))
+    expect(leftFailure).toStrictEqual(rightFailure)
+    expect(leftFailure).toBeInstanceOf(result.Failure)
+    expect(rightFailure).toBeInstanceOf(result.Failure)
+  })
+
+  it('monad law 2', () => {
+    const { unit, bind } = monads.Result
+    const lhs = bind(unit)
+    const rhs = id
+
+    const leftSuccess = lhs(result.Success('hi'))
+    const rightSuccess = rhs(result.Success('hi'))
+    expect(leftSuccess).toEqual(rightSuccess)
+    expect(leftSuccess).toBeInstanceOf(result.Success)
+    expect(rightSuccess).toBeInstanceOf(result.Success)
+
+    const leftFailure = lhs(result.Failure('hi'))
+    const rightFailure = rhs(result.Failure('hi'))
+    expect(leftFailure).toStrictEqual(rightFailure)
+    expect(leftFailure).toBeInstanceOf(result.Failure)
+    expect(rightFailure).toBeInstanceOf(result.Failure)
+  })
+
+  it('monad law 3', () => {
+    const { bind } = monads.Result
+    const f = x => result.Success(x + '!')
+    const g = x => result.Success(x + '@')
+    const lhs = compose(bind(g))(bind(f))
+    const rhs = bind(compose(bind(g))(f))
+
+    expect(lhs(result.Success(1))).toEqual(result.Success('1!@'))
+    expect(rhs(result.Success(1))).toEqual(result.Success('1!@'))
+    expect(lhs(result.Success(1))).toEqual(rhs(result.Success(1)))
+    expect(lhs(result.Failure(1))).toEqual(rhs(result.Failure(1)))
   })
 })
 
