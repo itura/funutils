@@ -7,6 +7,7 @@ module.exports = {
   generators: require('./generators'),
   monads: require('./monads'),
   maybe: require('./maybe'),
+  result: require('./result'),
   perf: require('./perf'),
   UserJourney: require('./UserJourney'),
   ...require('./common'),

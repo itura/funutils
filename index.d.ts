@@ -246,10 +246,11 @@ export module maybe {
   }
 
   function Maybe<X> (x: X): IMaybe<X>
+  function Truthy<X> (x: X): IMaybe<X>
   function Just<X> (x: X): IMaybe<X>
   function Nothing (): IMaybe<void>
   function isMaybe (x: any): boolean
-  function map<X, Y> (f: Transform<X, Y>): Transform<IMaybe<X>, IMaybe<Y>>
+  function map<X, Y> (f: Transform<X, Y | IMaybe<Y>>): Transform<IMaybe<X>, IMaybe<Y>>
   function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IMaybe<X>, Y>
   function unwrapOr<X, Y> (f: Supplier<Y>): Transform<IMaybe<X>, Y>
   function toBoolean (m: IMaybe<any>): boolean
@@ -262,6 +263,26 @@ export module maybe {
 
   type Key = string | number
   function dig <X, Y> (...keys: Key[]): Transform<X, IMaybe<Y>>
+}
+
+export module result {
+  interface IResult<X> extends maybe.IMaybe<X> {
+    map: <Y> (f: (x: X) => Y) => IResult<Y>
+    tapFailure: (f: SideEffect<X>) => IResult<X>
+  }
+
+  interface Cases<X, Y> {
+    success?: (x: X) => Y
+    failure: (x: X) => Y
+  }
+
+  function Result<X> (x: X): IResult<X>
+  function Success<X> (x: X): IResult<X>
+  function Failure<X> (x: X): IResult<X>
+  function isResult (X: any): boolean
+  function map<X, Y> (f: Transform<X, Y | IResult<Y>>): Transform<IResult<X>, IResult<Y>>
+  function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IResult<X>, Y>
+  function unwrapOr<X, Y> (f: Supplier<Y>): Transform<IResult<X>, Y>
 }
 
 export module monads {
