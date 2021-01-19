@@ -3,6 +3,7 @@ module.exports = {
   array: require('./array'),
   string: require('./string'),
   number: require('./number'),
+  promise: require('./promise'),
   colors: require('./colors'),
   generators: require('./generators'),
   monads: require('./monads'),

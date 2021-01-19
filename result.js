@@ -55,32 +55,55 @@ Object.assign(Failure.prototype, {
   }
 })
 
+const Pending = function () {
+  if (!(this instanceof Pending)) {
+    return new Pending()
+  }
+}
+Pending.prototype = Object.create(maybe.Nothing.prototype)
+Object.assign(Pending.prototype, {
+  ...resultMethods,
+  toString: function () {
+    return 'result.Pending'
+  }
+})
+
 const unwrap = cases => result => {
   if (result instanceof Success) {
     return cases.success ? cases.success(result.value) : result.value
+  }
+
+  if (result instanceof Pending) {
+    if (!cases.pending) {
+      throw new TypeError('funutils.result: unhandled Pending')
+    }
+    return cases.pending()
   }
 
   if (result instanceof Failure) {
     if (!cases.failure) {
       throw new TypeError('funutils.result: unhandled Failure')
     }
-    return cases.failure(result.value, result.initial)
+    return cases.failure(result.value)
   }
 
   throw new TypeError(`funutils.result: not a Result: '${result}'`)
 }
 
 const unwrapOr = f => unwrap({
+  pending: f,
   failure: value => f(value)
 })
 
 const map = f => unwrap({
   success: value => Result(f(value)),
+  pending: Pending,
   failure: Failure
 })
 
 const tapFailure = f => unwrap({
   success: Success,
+  pending: Pending,
   failure: value => {
     f(value)
     return Failure(value)
@@ -91,6 +114,7 @@ module.exports = {
   Result,
   Success,
   Failure,
+  Pending,
   isResult,
   unwrap,
   unwrapOr,

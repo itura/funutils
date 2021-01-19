@@ -279,6 +279,7 @@ export module result {
   function Result<X> (x: X): IResult<X>
   function Success<X> (x: X): IResult<X>
   function Failure<X> (x: X): IResult<X>
+  function Pending<X> (): IResult<X>
   function isResult (X: any): boolean
   function map<X, Y> (f: Transform<X, Y | IResult<Y>>): Transform<IResult<X>, IResult<Y>>
   function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IResult<X>, Y>
@@ -360,6 +361,11 @@ export module number {
   function isEven(n: number): boolean
   function isOdd(n: number): boolean
 }
+
+// export module promise {
+//   function then<X, Y>(f: AsyncChain<X, Y>): Promise<Y>
+//   function catch<X, Y>(f: AsyncChain<X, Y>): Promise<Y>
+// }
 
 export module generators {
   const zip: Generator<any[], void, void>
