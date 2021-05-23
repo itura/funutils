@@ -1,6 +1,6 @@
 {
   "name": "@austin-garrard/funutils",
-  "version": "2.0.0-alpha.5",
+  "version": "2.0.0-alpha.6",
   "description": "Fun functional utilities for ES6",
   "repository": "https://github.com/austin-garrard/funutils",
   "main": "index.js",
