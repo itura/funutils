@@ -75,6 +75,20 @@ const repeat = (count, f) =>
   [...Array(count)].map((_, i) => f(i))
 
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+const waitFor = async ({
+  condition,
+  interval = 50,
+  max = 1000
+}) => {
+  let timeWaited = 0
+  while (!condition()) {
+    if (timeWaited >= max) {
+      throw new Error(`condition not met in ${max}ms`)
+    }
+    timeWaited += interval
+    await sleep(interval)
+  }
+}
 
 const Builder = factory =>
   (...fs) => chain(
@@ -111,5 +125,6 @@ module.exports = {
   lessThanOrEqualTo,
   greaterThan,
   greaterThanOrEqualTo,
-  equalTo
+  equalTo,
+  waitFor
 }

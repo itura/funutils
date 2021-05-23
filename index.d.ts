@@ -219,6 +219,11 @@ export declare function zip (...xs: any[]): any[][]
 export declare function randomInt (range: number, min?: number): number
 export declare function repeat<X> (count: number, f: Transform<number, X>): X[]
 export declare function sleep (ms: number): Promise<void>
+export declare function waitFor (params: {
+  condition: Predicate<void>
+  interval?: number
+  max?: number
+}): Promise<void>
 
 export interface BuilderConfig {
   [key: string]: any
@@ -234,10 +239,12 @@ export declare function equalTo<X> (x: X): Predicate<X>
 export module maybe {
   interface IMaybe<X> extends Functor<X> {
     map: <Y> (f: (x: X) => Y) => IMaybe<Y>
+    tap: (f: (x: X) => void) => IMaybe<X>
     unwrap: <Y> (cases: Cases<X, Y>) => Y
     unwrapOr: <Y> (f: Supplier<Y>) => Y
     dig: <Y> (...keys: string[]) => IMaybe<Y>
     toBoolean: () => boolean
+    join: <X, Y>(m1: IMaybe<X>) => Transform<IMaybe<Y>, IMaybe<[X, Y]>>
   }
 
   interface Cases<X, Y> {
@@ -251,10 +258,12 @@ export module maybe {
   function Nothing (): IMaybe<void>
   function isMaybe (x: any): boolean
   function map<X, Y> (f: Transform<X, Y | IMaybe<Y>>): Transform<IMaybe<X>, IMaybe<Y>>
+  function tap<X> (f: (x: X) => void): IMaybe<X>
   function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IMaybe<X>, Y>
   function unwrapOr<X, Y> (f: Supplier<Y>): Transform<IMaybe<X>, Y>
   function toBoolean (m: IMaybe<any>): boolean
 
+  function join<X, Y>(m1: IMaybe<X>): Transform<IMaybe<Y>, IMaybe<[X, Y]>>
   function given<X> (...ms: IMaybe<any>[]): Transform<(...xs: any[]) => X, IMaybe<X>>
   function none<X> (...ms: IMaybe<any>[]): (f: () => X) => IMaybe<X>
 
@@ -268,6 +277,7 @@ export module maybe {
 export module result {
   interface IResult<X> extends maybe.IMaybe<X> {
     map: <Y> (f: (x: X) => Y) => IResult<Y>
+    tap: (f: (x: X) => void) => IResult<X>
     tapFailure: (f: SideEffect<X>) => IResult<X>
   }
 
@@ -282,6 +292,8 @@ export module result {
   function Pending<X> (): IResult<X>
   function isResult (X: any): boolean
   function map<X, Y> (f: Transform<X, Y | IResult<Y>>): Transform<IResult<X>, IResult<Y>>
+  function tap<X> (f: (x: X) => void): IResult<X>
+  function tapFailure<X> (f: (x: X) => void): IResult<X>
   function unwrap<X, Y> (cases: Cases<X, Y>): Transform<IResult<X>, Y>
   function unwrapOr<X, Y> (f: Supplier<Y>): Transform<IResult<X>, Y>
 }

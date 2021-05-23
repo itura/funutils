@@ -169,13 +169,13 @@ describe('maybe', () => {
   describe('given', () => {
     it('applies the function when all Maybes are Justs', () => {
       expect(
-        maybe.given(m1, m2)((v1, v2) => `${v1} ${v2}`)
+        maybe.given((v1, v2) => `${v1} ${v2}`)(m1, m2)
       ).toEqual(
         maybe.Just('hi there')
       )
 
       expect(
-        maybe.given(m1, m2)((v1, v2) => null)
+        maybe.given((v1, v2) => null)(m1, m2)
       ).toEqual(
         maybe.Nothing()
       )
@@ -183,7 +183,7 @@ describe('maybe', () => {
 
     it('returns Nothing when any Maybe is Nothing', () => {
       expect(
-        maybe.given(m1, m2, m3)(() => 'hi there')
+        maybe.given(() => 'hi there')(m1, m2, m3)
       ).toEqual(
         maybe.Nothing()
       )

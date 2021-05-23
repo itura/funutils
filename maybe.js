@@ -20,6 +20,9 @@ const maybeMethods = {
   map: function (f) {
     return map(f)(this)
   },
+  tap: function (f) {
+    return tap(f)(this)
+  },
   unwrap: function (cases) {
     return unwrap(cases)(this)
   },
@@ -31,6 +34,9 @@ const maybeMethods = {
   },
   toBoolean: function () {
     return toBoolean(this)
+  },
+  join: function (m2) {
+    return join(this)(m2)
   }
 }
 
@@ -80,16 +86,27 @@ const unwrap = cases => maybe => {
   throw new TypeError(`funutils.maybe: not a Maybe: '${maybe}'`)
 }
 
-const map = f => unwrap({
+const map = f => m => unwrap({
   just: value => Maybe(f(value)),
-  nothing: () => nothing
-})
+  nothing: () => m
+})(m)
 
 const unwrapOr = f => unwrap({
   nothing: () => f()
 })
 
-const given = (...ms) => f =>
+const tap = f => m => unwrap({
+  just: x => {
+    f(x)
+    return m
+  },
+  nothing: () => m
+})(m)
+
+const join = m1 => m2 =>
+  m1.map(v1 => m2.map(v2 => [v1, v2]))
+
+const given = f => (...ms) =>
   chain(
     array.reduce(
       (maybeArgs, m) => maybeArgs.map(
@@ -155,7 +172,9 @@ module.exports = {
   unwrap,
   map,
   unwrapOr,
+  tap,
   isMaybe,
+  join,
   given,
   none,
   conditions,

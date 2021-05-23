@@ -1,4 +1,5 @@
 const maybe = require('./maybe')
+const { chain } = require('./common')
 
 const Result = function (value) {
   return isResult(value)
@@ -92,23 +93,47 @@ const unwrap = cases => result => {
 
 const unwrapOr = f => unwrap({
   pending: f,
-  failure: value => f(value)
+  failure: f
 })
 
-const map = f => unwrap({
+const map = f => r => unwrap({
   success: value => Result(f(value)),
-  pending: Pending,
-  failure: Failure
-})
+  pending: () => r,
+  failure: () => r
+})(r)
 
-const tapFailure = f => unwrap({
-  success: Success,
-  pending: Pending,
+const tap = f => r => unwrap({
+  success: value => {
+    f(value)
+    return r
+  },
+  pending: () => {
+    f()
+    return r
+  },
   failure: value => {
     f(value)
-    return Failure(value)
+    return r
   }
-})
+})(r)
+
+const tapFailure = f => r => unwrap({
+  success: r,
+  pending: r,
+  failure: value => {
+    f(value)
+    return r
+  }
+})(r)
+
+const given = (f) => (...rs) =>
+  chain(
+    () => maybe.given(f)(...rs),
+    maybe.unwrap({
+      just: Success,
+      nothing: Pending
+    })
+  )()
 
 module.exports = {
   Result,
@@ -119,5 +144,7 @@ module.exports = {
   unwrap,
   unwrapOr,
   map,
-  tapFailure
+  tapFailure,
+  tap,
+  given
 }
