@@ -1,3 +1,4 @@
+const array = require('./array')
 const maybe = require('./maybe')
 const { chain } = require('./common')
 
@@ -6,7 +7,7 @@ const Result = function (value) {
     ? value
     : maybe.Maybe(value).toBoolean()
       ? Success(value)
-      : Failure(`Received ${value}`)
+      : Failure(`funutils.result: Received ${value}`)
 }
 
 const resultMethods = {
@@ -24,7 +25,7 @@ const resultMethods = {
   }
 }
 
-const isResult = x => x instanceof Success || x instanceof Failure
+const isResult = x => x instanceof Success || x instanceof Failure || x instanceof Pending
 
 const Success = function (value) {
   if (!(this instanceof Success)) {
@@ -128,12 +129,15 @@ const tapFailure = f => r => unwrap({
 
 const given = (f) => (...rs) =>
   chain(
-    () => maybe.given(f)(...rs),
-    maybe.unwrap({
-      just: Success,
-      nothing: Pending
-    })
-  )()
+    array.reduce(
+      (maybeArgs, m) => maybeArgs.map(
+        args => m.map(v => args.concat(v))
+      ),
+      Success([])
+    ),
+
+    map(args => f(...args))
+  )(rs)
 
 module.exports = {
   Result,

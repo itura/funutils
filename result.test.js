@@ -67,4 +67,55 @@ describe('result', () => {
     expect(transform2(result.Failure({ key: 'hi' }))).toEqual(-1)
     expect(transform2(result.Pending())).toEqual(-1)
   })
+
+  describe('given', () => {
+    const r1 = result.Success({ name: 'hi' })
+    const r2 = result.Success({ blah: 'there' })
+    const r3 = result.Pending()
+    const r4 = result.Failure('oops')
+
+    it('applies the function when all Results are Successes', () => {
+      expect(
+        result.given((v1, v2) => `${v1.name} ${v2.blah}`)(r1, r2)
+      ).toEqual(
+        result.Success('hi there')
+      )
+
+      expect(
+        result.given((v1, v2) => null)(r1, r2)
+      ).toEqual(
+        result.Failure('funutils.result: Received null')
+      )
+    })
+
+    it('returns Pending with any Result is Pending', () => {
+      expect(
+        result.given((v1, v2) => `${v1.name} ${v2.blah}`)(r1, r3)
+      ).toEqual(
+        result.Pending()
+      )
+    })
+
+    it('returns Failure with any Result is Failure', () => {
+      expect(
+        result.given((v1, v2) => `${v1.name} ${v2.blah}`)(r1, r4)
+      ).toEqual(
+        result.Failure('oops')
+      )
+    })
+
+    it('returns the first non-Success state', () => {
+      expect(
+        result.given((v1, v2) => `${v1.name} ${v2.blah}`)(r3, r4, r1)
+      ).toEqual(
+        result.Pending()
+      )
+
+      expect(
+        result.given((v1, v2) => `${v1.name} ${v2.blah}`)(r4, r3, r1)
+      ).toEqual(
+        result.Failure('oops')
+      )
+    })
+  })
 })
